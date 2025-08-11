@@ -1,0 +1,320 @@
+<!-- templates/base.html -->
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_settings.site_name_ar }}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    {% if LANGUAGE_CODE == 'ar' %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% else %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% endif %}
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% if site_settings.favicon %}
+        <link rel="icon" type="image/x-icon" href="{{ site_settings.favicon.url }}">
+    {% endif %}
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-area">
+        <!-- Top Bar -->
+        <div class="top-bar bg-primary text-white py-2">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="contact-info">
+                            {% if site_settings.phone %}
+                                <span class="me-3">
+                                    <i class="fas fa-phone"></i> {{ site_settings.phone }}
+                                </span>
+                            {% endif %}
+                            {% if site_settings.email %}
+                                <span>
+                                    <i class="fas fa-envelope"></i> {{ site_settings.email }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-end">
+                            <!-- Language Switcher -->
+                            <div class="language-switcher d-inline-block me-3">
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        {% if LANGUAGE_CODE == 'ar' %}العربية
+                                        {% elif LANGUAGE_CODE == 'en' %}English
+                                        {% else %}Türkçe{% endif %}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'core:set_language' 'ar' %}">العربية</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'core:set_language' 'en' %}">English</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'core:set_language' 'tr' %}">Türkçe</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Social Links -->
+                            <div class="social-links d-inline-block">
+                                {% if site_settings.facebook %}
+                                    <a href="{{ site_settings.facebook }}" target="_blank" class="text-white me-2">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                {% endif %}
+                                {% if site_settings.instagram %}
+                                    <a href="{{ site_settings.instagram }}" target="_blank" class="text-white me-2">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                {% endif %}
+                                {% if site_settings.twitter %}
+                                    <a href="{{ site_settings.twitter }}" target="_blank" class="text-white me-2">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                {% endif %}
+                                {% if site_settings.linkedin %}
+                                    <a href="{{ site_settings.linkedin }}" target="_blank" class="text-white">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand" href="{% url 'core:home' %}">
+                    {% if site_settings.logo %}
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" height="50">
+                    {% else %}
+                        <h3 class="mb-0 text-primary fw-bold">{{ site_settings.site_name_ar }}</h3>
+                    {% endif %}
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Navigation Menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:home' %}">{% trans 'الرئيسية' %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:about' %}">{% trans 'من نحن' %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'services:list' %}">{% trans 'خدماتنا' %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'news:list' %}">{% trans 'الأخبار والأنشطة' %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'team:list' %}">{% trans 'فريق العمل' %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'contact:index' %}">{% trans 'اتصل بنا' %}</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="d-flex">
+                        <a href="{% url 'contact:service_request' %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+                        </a>
+                        <a href="{% url 'contact:appointment' %}" class="btn btn-primary">
+                            <i class="fas fa-calendar-check"></i> {% trans 'حجز موعد' %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Messages -->
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="text-primary mb-3">
+                        {% if site_settings.logo %}
+                            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" height="40" class="me-2">
+                        {% endif %}
+                        {{ site_settings.site_name_ar }}
+                    </h5>
+                    {% if site_settings.about_ar %}
+                        <p class="text-muted">{{ site_settings.about_ar|truncatewords:30|safe }}</p>
+                    {% endif %}
+                    
+                    <!-- Social Links -->
+                    <div class="social-links mt-3">
+                        {% if site_settings.facebook %}
+                            <a href="{{ site_settings.facebook }}" target="_blank" class="btn btn-outline-light btn-sm me-2">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        {% endif %}
+                        {% if site_settings.instagram %}
+                            <a href="{{ site_settings.instagram }}" target="_blank" class="btn btn-outline-light btn-sm me-2">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        {% endif %}
+                        {% if site_settings.twitter %}
+                            <a href="{{ site_settings.twitter }}" target="_blank" class="btn btn-outline-light btn-sm me-2">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        {% endif %}
+                        {% if site_settings.linkedin %}
+                            <a href="{{ site_settings.linkedin }}" target="_blank" class="btn btn-outline-light btn-sm">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">{% trans 'روابط سريعة' %}</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'core:home' %}" class="text-muted text-decoration-none">{% trans 'الرئيسية' %}</a></li>
+                        <li class="mb-2"><a href="{% url 'core:about' %}" class="text-muted text-decoration-none">{% trans 'من نحن' %}</a></li>
+                        <li class="mb-2"><a href="{% url 'services:list' %}" class="text-muted text-decoration-none">{% trans 'خدماتنا' %}</a></li>
+                        <li class="mb-2"><a href="{% url 'news:list' %}" class="text-muted text-decoration-none">{% trans 'الأخبار' %}</a></li>
+                        <li class="mb-2"><a href="{% url 'team:list' %}" class="text-muted text-decoration-none">{% trans 'فريق العمل' %}</a></li>
+                        <li class="mb-2"><a href="{% url 'contact:index' %}" class="text-muted text-decoration-none">{% trans 'اتصل بنا' %}</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Services -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">{% trans 'خدماتنا' %}</h6>
+                    <ul class="list-unstyled">
+                        {% for service in services|slice:":5" %}
+                            <li class="mb-2">
+                                <a href="{% url 'services:detail' service.pk %}" class="text-muted text-decoration-none">
+                                    {{ service.title_ar }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">{% trans 'معلومات التواصل' %}</h6>
+                    {% if site_settings.address_ar %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {{ site_settings.address_ar }}
+                        </p>
+                    {% endif %}
+                    {% if site_settings.phone %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:{{ site_settings.phone }}" class="text-muted text-decoration-none">
+                                {{ site_settings.phone }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    {% if site_settings.email %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:{{ site_settings.email }}" class="text-muted text-decoration-none">
+                                {{ site_settings.email }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    {% if site_settings.whatsapp %}
+                        <p class="text-muted mb-2">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            <a href="https://wa.me/{{ site_settings.whatsapp }}" target="_blank" class="text-muted text-decoration-none">
+                                {% trans 'واتساب' %}
+                            </a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Copyright -->
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        &copy; {% now "Y" %} {{ site_settings.site_name_ar }}. {% trans 'جميع الحقوق محفوظة' %}.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        {% trans 'تم التطوير بواسطة' %} 
+                        <a href="#" class="text-primary text-decoration-none">{% trans 'فريق التطوير' %}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    {% if site_settings.whatsapp %}
+        <a href="https://wa.me/{{ site_settings.whatsapp }}" target="_blank" class="whatsapp-float" 
+           title="{% trans 'تواصل عبر الواتساب' %}">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    {% endif %}
+
+    <!-- Back to Top -->
+    <button onclick="topFunction()" id="backToTopBtn" class="back-to-top" title="{% trans 'العودة للأعلى' %}">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/script.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

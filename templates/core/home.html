@@ -1,0 +1,210 @@
+
+<!-- templates/core/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ site_settings.site_name_ar }} - {% trans 'الصفحة الرئيسية' %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold mb-4">
+                        {% trans 'مرحباً بكم في' %} {{ site_settings.site_name_ar }}
+                    </h1>
+                    {% if site_settings.about_ar %}
+                        <p class="lead mb-4">{{ site_settings.about_ar|truncatewords:25|safe }}</p>
+                    {% endif %}
+                    <div class="hero-buttons">
+                        <a href="{% url 'core:about' %}" class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-info-circle"></i> {% trans 'تعرف علينا' %}
+                        </a>
+                        <a href="{% url 'contact:service_request' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image text-center">
+                    {% if site_settings.logo %}
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" 
+                             class="img-fluid hero-logo">
+                    {% else %}
+                        <div class="hero-placeholder">
+                            <i class="fas fa-heart fa-10x text-white-50"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+{% if services %}
+    <section class="services-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">{% trans 'خدماتنا' %}</h2>
+                <p class="text-muted">{% trans 'نقدم مجموعة متنوعة من الخدمات المتخصصة' %}</p>
+            </div>
+            
+            <div class="row g-4">
+                {% for service in services %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="service-card card h-100 border-0 shadow-sm">
+                            {% if service.image %}
+                                <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.title_ar }}">
+                            {% endif %}
+                            <div class="card-body text-center p-4">
+                                {% if service.icon %}
+                                    <div class="service-icon mb-3">
+                                        <i class="{{ service.icon }} fa-3x text-primary"></i>
+                                    </div>
+                                {% endif %}
+                                <h5 class="card-title">{{ service.title_ar }}</h5>
+                                <p class="card-text text-muted">{{ service.description_ar|truncatewords:15|safe }}</p>
+                                <a href="{% url 'services:detail' service.pk %}" class="btn btn-primary">
+                                    {% trans 'اقرأ المزيد' %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{% url 'services:list' %}" class="btn btn-outline-primary btn-lg">
+                    {% trans 'عرض جميع الخدمات' %}
+                </a>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<!-- Featured News Section -->
+{% if featured_news %}
+    <section class="news-section py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">{% trans 'آخر الأخبار والأنشطة' %}</h2>
+                <p class="text-muted">{% trans 'تابع آخر أخبارنا وأنشطتنا' %}</p>
+            </div>
+            
+            <div class="row g-4">
+                {% for news in featured_news %}
+                    <div class="col-lg-4">
+                        <article class="news-card card h-100 border-0 shadow-sm">
+                            {% if news.featured_image %}
+                                <img src="{{ news.featured_image.url }}" class="card-img-top" alt="{{ news.title_ar }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <div class="news-meta mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ news.published_at|date:"d M Y" }}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-eye"></i> {{ news.views }}
+                                    </small>
+                                </div>
+                                <h5 class="card-title">
+                                    <a href="{% url 'news:detail' news.pk %}" class="text-decoration-none">
+                                        {{ news.title_ar }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">{{ news.excerpt_ar }}</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{% url 'news:detail' news.pk %}" class="btn btn-sm btn-outline-primary">
+                                    {% trans 'قراءة المزيد' %}
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{% url 'news:list' %}" class="btn btn-outline-primary btn-lg">
+                    {% trans 'عرض جميع الأخبار' %}
+                </a>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<!-- Team Section -->
+{% if team_members %}
+    <section class="team-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">{% trans 'فريق العمل' %}</h2>
+                <p class="text-muted">{% trans 'تعرف على فريقنا المتميز' %}</p>
+            </div>
+            
+            <div class="row g-4">
+                {% for member in team_members %}
+                    <div class="col-lg-3 col-md-6">
+                        <div class="team-card card border-0 shadow-sm text-center">
+                            {% if member.photo %}
+                                <img src="{{ member.photo.url }}" class="card-img-top team-photo" alt="{{ member.name_ar }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ member.name_ar }}</h5>
+                                <p class="text-primary">{{ member.position_ar }}</p>
+                                {% if member.bio_ar %}
+                                    <p class="card-text small text-muted">{{ member.bio_ar|truncatewords:10 }}</p>
+                                {% endif %}
+                                
+                                <div class="team-social mt-3">
+                                    {% if member.email %}
+                                        <a href="mailto:{{ member.email }}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                    {% endif %}
+                                    {% if member.facebook %}
+                                        <a href="{{ member.facebook }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fab fa-facebook-f"></i>
+                                        </a>
+                                    {% endif %}
+                                    {% if member.linkedin %}
+                                        <a href="{{ member.linkedin }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fab fa-linkedin-in"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{% url 'team:list' %}" class="btn btn-outline-primary btn-lg">
+                    {% trans 'عرض جميع أعضاء الفريق' %}
+                </a>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<!-- Call to Action Section -->
+<section class="cta-section bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">{% trans 'هل تحتاج إلى مساعدة؟' %}</h2>
+        <p class="lead mb-4">{% trans 'لا تتردد في التواصل معنا، نحن هنا لخدمتك' %}</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact:index' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-phone"></i> {% trans 'تواصل معنا' %}
+            </a>
+            <a href="{% url 'contact:service_request' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
