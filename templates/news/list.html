@@ -1,0 +1,272 @@
+<!-- templates/news/list.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ site_settings.site_name_ar }} - {% trans 'الأخبار والأنشطة' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.news-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+}
+
+.news-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(107, 115, 255, 0.2);
+}
+
+.news-meta {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.news-category {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #ff6b6b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.filter-tabs {
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.filter-tab {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.5rem;
+    border-radius: 40px;
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="news-hero text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    {% trans 'الأخبار والأنشطة' %}
+                </h1>
+                <p class="lead">
+                    {% trans 'تابعي آخر أخبارنا وأنشطتنا في مجال تمكين المرأة' %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<section class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="filter-tabs text-center">
+                    <button class="filter-tab active" data-filter="all">
+                        {% trans 'جميع الأخبار' %}
+                    </button>
+                    <button class="filter-tab" data-filter="featured">
+                        {% trans 'الأخبار المميزة' %}
+                    </button>
+                    {% for category in categories %}
+                    <button class="filter-tab" data-filter="category-{{ category.id }}">
+                        {{ category.name_ar }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- News Grid -->
+<section class="py-5">
+    <div class="container">
+        {% if news_list %}
+        <div class="row g-4" id="news-grid">
+            {% for news in news_list %}
+            <div class="col-lg-4 col-md-6 news-item" 
+                 data-category="category-{{ news.category.id }}"
+                 data-featured="{% if news.is_featured %}true{% else %}false{% endif %}">
+                <article class="news-card card h-100 shadow-sm">
+                    {% if news.is_featured %}
+                    <div class="featured-badge">
+                        <i class="fas fa-star"></i> {% trans 'مميز' %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if news.featured_image %}
+                    <img src="{{ news.featured_image.url }}" class="card-img-top" 
+                         alt="{{ news.title_ar }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-newspaper fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <div class="news-meta mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> 
+                                    {{ news.published_at|date:"d M Y" }}
+                                </small>
+                                {% if news.category %}
+                                <span class="news-category">
+                                    {{ news.category.name_ar }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h5 class="card-title">
+                            <a href="{% url 'news:detail' news.pk %}" class="text-decoration-none text-dark">
+                                {{ news.title_ar }}
+                            </a>
+                        </h5>
+                        
+                        <p class="card-text text-muted">
+                            {{ news.excerpt_ar|default:news.content_ar|truncatewords:20|safe }}
+                        </p>
+                        
+                        <div class="news-meta small text-muted">
+                            <span class="me-3">
+                                <i class="fas fa-eye"></i> {{ news.views }}
+                            </span>
+                            {% if news.author %}
+                            <span>
+                                <i class="fas fa-user"></i> {{ news.author.get_full_name|default:news.author.username }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'news:detail' news.pk %}" class="btn btn-outline-primary btn-sm">
+                            {% trans 'قراءة المزيد' %}
+                            <i class="fas fa-arrow-left ms-1"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="{% trans 'تصفح الأخبار' %}">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="row">
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">{% trans 'لا توجد أخبار متاحة حالياً' %}</h4>
+                <p class="text-muted">{% trans 'تابعونا للحصول على آخر الأخبار والأنشطة' %}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const newsItems = document.querySelectorAll('.news-item');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            filterTabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            newsItems.forEach(item => {
+                if (filter === 'all') {
+                    item.style.display = 'block';
+                } else if (filter === 'featured') {
+                    item.style.display = item.dataset.featured === 'true' ? 'block' : 'none';
+                } else if (filter.startsWith('category-')) {
+                    item.style.display = item.dataset.category === filter ? 'block' : 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+

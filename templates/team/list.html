@@ -1,0 +1,463 @@
+<!-- templates/team/list.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ site_settings.site_name_ar }} - {% trans 'فريق العمل' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.team-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.team-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="team-pattern" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M15 5 Q10 10 15 15 Q20 10 15 5" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><circle cx="15" cy="15" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23team-pattern)"/></svg>') repeat;
+    opacity: 0.3;
+}
+
+.team-member-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+    border: none;
+    position: relative;
+}
+
+.team-member-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.team-member-card:hover::before {
+    transform: scaleX(1);
+}
+
+.team-member-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 50px rgba(107, 115, 255, 0.2);
+}
+
+.member-photo {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    position: relative;
+}
+
+.member-photo-placeholder {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.member-photo-placeholder i {
+    font-size: 4rem;
+    color: #6c757d;
+}
+
+.member-info {
+    padding: 2rem;
+    text-align: center;
+}
+
+.member-name {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.member-position {
+    color: #6b73ff;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.member-bio {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.member-social {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    background: #f8f9fa;
+    color: #6c757d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.social-link:hover {
+    transform: translateY(-3px);
+    color: white;
+}
+
+.social-link.email:hover {
+    background: #e74c3c;
+}
+
+.social-link.phone:hover {
+    background: #27ae60;
+}
+
+.social-link.facebook:hover {
+    background: #3b5998;
+}
+
+.social-link.linkedin:hover {
+    background: #0077b5;
+}
+
+.team-stats {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin: 2rem 0;
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.team-filters {
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 3rem;
+}
+
+.filter-btn {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.5rem;
+    border-radius: 40px;
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+    font-weight: 500;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+}
+
+.filter-btn:hover:not(.active) {
+    background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .member-info {
+        padding: 1.5rem;
+    }
+    
+    .team-filters {
+        padding: 0.3rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="team-hero text-white py-5">
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    {% trans 'فريق العمل' %}
+                </h1>
+                <p class="lead mb-4">
+                    تعرفي على الفريق المتميز الذي يعمل بشغف لتحقيق رسالتنا في تمكين المرأة
+                </p>
+                <div class="hero-quote">
+                    <h4 class="fw-light fst-italic">"نؤمن بقوة الفريق الواحد في صناعة التغيير"</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Members Grid -->
+<section class="py-5">
+    <div class="container">
+        {% if team_members %}
+        <div class="row g-4" id="team-grid">
+            {% for member in team_members %}
+            <div class="col-lg-4 col-md-6 team-member-item" 
+                 data-category="{% if 'مدير' in member.position_ar %}management{% elif 'مدرب' in member.position_ar %}trainers{% elif 'متطوع' in member.position_ar %}volunteers{% else %}management{% endif %}">
+                <div class="team-member-card">
+                    {% if member.photo %}
+                    <img src="{{ member.photo.url }}" alt="{{ member.name_ar }}" class="member-photo">
+                    {% else %}
+                    <div class="member-photo-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="member-info">
+                        <h4 class="member-name">{{ member.name_ar }}</h4>
+                        <p class="member-position">{{ member.position_ar }}</p>
+                        
+                        {% if member.bio_ar %}
+                        <p class="member-bio">{{ member.bio_ar|truncatewords:25 }}</p>
+                        {% endif %}
+                        
+                        <div class="member-social">
+                            {% if member.email %}
+                            <a href="mailto:{{ member.email }}" class="social-link email" title="البريد الإلكتروني">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.phone %}
+                            <a href="tel:{{ member.phone }}" class="social-link phone" title="الهاتف">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.facebook %}
+                            <a href="{{ member.facebook }}" target="_blank" class="social-link facebook" title="فيسبوك">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.linkedin %}
+                            <a href="{{ member.linkedin }}" target="_blank" class="social-link linkedin" title="لينكدإن">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">{% trans 'لا يوجد أعضاء فريق متاحين حالياً' %}</h4>
+            <p class="text-muted">{% trans 'نعمل على تحديث معلومات الفريق' %}</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Our Values Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="section-title">{% trans 'قيمنا كفريق' %}</h3>
+            <p class="text-muted">{% trans 'المبادئ التي تجمعنا وتوجه عملنا' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'الشغف والتفاني' %}</h5>
+                    <p class="text-muted">نعمل بشغف وحب لخدمة مجتمعنا وتمكين المرأة</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'التعاون والتآزر' %}</h5>
+                    <p class="text-muted">نؤمن بقوة العمل الجماعي وروح الفريق الواحد</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'الإبداع والابتكار' %}</h5>
+                    <p class="text-muted">نسعى دائماً لإيجاد حلول مبتكرة وطرق جديدة</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'الأمانة والمسؤولية' %}</h5>
+                    <p class="text-muted">نحمل الأمانة بصدق ونتحمل مسؤوليتنا تجاه مجتمعنا</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'التعلم المستمر' %}</h5>
+                    <p class="text-muted">نؤمن بأهمية التطوير المستمر لأنفسنا ومهاراتنا</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                    </div>
+                    <h5>{% trans 'العدالة والإنصاف' %}</h5>
+                    <p class="text-muted">نلتزم بالعدالة والإنصاف في جميع تعاملاتنا</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Join Our Team -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="p-5" style="background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 20px; color: white;">
+                    <h3 class="mb-4">{% trans 'هل ترغبين في الانضمام لفريقنا؟' %}</h3>
+                    <p class="lead mb-4">
+                        {% trans 'نحن نبحث دائماً عن أعضاء جدد يشاركوننا الرؤية والشغف لخدمة المجتمع' %}
+                    </p>
+                    <div>
+                        <a href="{% url 'contact:index' %}?subject={% trans 'طلب انضمام للفريق' %}" 
+                           class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-user-plus"></i> {% trans 'انضمي إلينا' %}
+                        </a>
+                        <a href="{% url 'contact:index' %}?subject={% trans 'استفسار عن التطوع' %}" 
+                           class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-hands-helping"></i> {% trans 'تطوعي معنا' %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Team Filter Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const teamMembers = document.querySelectorAll('.team-member-item');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            teamMembers.forEach(member => {
+                if (filter === 'all') {
+                    member.style.display = 'block';
+                    member.style.animation = 'fadeIn 0.5s ease';
+                } else {
+                    if (member.dataset.category === filter) {
+                        member.style.display = 'block';
+                        member.style.animation = 'fadeIn 0.5s ease';
+                    } else {
+                        member.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+    
+    // Add fade in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}

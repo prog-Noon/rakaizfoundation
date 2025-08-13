@@ -59,6 +59,7 @@
                             <!-- Language Switcher -->
                             <div class="language-switcher d-inline-block me-3">
                                 <div class="dropdown">
+                                      {% get_current_language as CURRENT_LANG %}
                                     <button class="btn btn-link text-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                         {% if LANGUAGE_CODE == 'ar' %}العربية
                                         {% elif LANGUAGE_CODE == 'en' %}English
@@ -106,12 +107,13 @@
             <div class="container">
                 <!-- Logo -->
                 <a class="navbar-brand" href="{% url 'core:home' %}">
-                    {% if site_settings.logo %}
-                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" height="50">
-                    {% else %}
-                        <h3 class="mb-0 text-primary fw-bold">{{ site_settings.site_name_ar }}</h3>
-                    {% endif %}
-                </a>
+    {% if site_settings.logo %}
+        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" height="100">
+    {% else %}
+        <img src="{% static 'images/logo.png' %}" alt="{{ site_settings.site_name_ar }}" height="100">
+    {% endif %}
+</a>
+
                 
                 <!-- Mobile Toggle -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

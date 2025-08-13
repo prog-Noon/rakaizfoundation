@@ -1,0 +1,521 @@
+<!-- templates/core/about.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ site_settings.site_name_ar }} - {% trans 'من نحن' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.about-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="lotus" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M10 5 Q5 10 10 15 Q15 10 10 5" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23lotus)"/></svg>') repeat;
+    opacity: 0.1;
+}
+
+.mission-card {
+    background: linear-gradient(135deg, rgba(107, 115, 255, 0.1), rgba(155, 65, 146, 0.1));
+    border: none;
+    border-radius: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mission-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(107, 115, 255, 0.2);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.value-item {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #6b73ff;
+    transition: all 0.3s ease;
+}
+
+.value-item:nth-child(even) {
+    border-top-color: #9b4192;
+}
+
+.value-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.value-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: white;
+}
+
+.goals-section {
+    background: linear-gradient(45deg, #f8f9ff, #fff0f5);
+}
+
+.goal-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.goal-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 8px 25px rgba(107, 115, 255, 0.15);
+}
+
+.goal-number {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.statistics {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin: 3rem 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .goal-item:hover {
+        transform: translateY(-5px);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero text-white py-5">
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    {% trans 'من نحن' %}
+                </h1>
+                <p class="lead mb-4">
+                    مؤسسة تنموية توعوية تُعنى بتفعيل دور المرأة السورية عبر برامج ومبادرات نوعية
+                </p>
+                <div class="hero-slogan">
+                    <h3 class="fw-light fst-italic">"امرأة واعية أثر ممتد"</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Introduction Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5">
+                    <h2 class="section-title mb-4">{% trans 'لأنكِ جوهر التغيير' %}</h2>
+                    <p class="lead text-muted">
+                        نؤمن بكِ، ونمضي معكِ لتنمية مهاراتك
+                    </p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mission-card card h-100 p-4">
+                            <div class="card-body">
+                                <h4 class="card-title text-primary mb-3">
+                                    <i class="fas fa-eye me-2"></i>
+                                    {% trans 'رؤيتنا' %}
+                                </h4>
+                                <p class="card-text">
+                                    امرأةٌ سوريةٌ واعية، متوازنة رغم عواصف الظروف، تقف على أرضٍ صلبة تمتاز بالتوازن والمعرفة، 
+                                    لتكون قلبًا نابضًا لأسرةٍ سويّة، وروحاً حيّة تسهم في نهضة المجتمع
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mission-card card h-100 p-4">
+                            <div class="card-body">
+                                <h4 class="card-title text-primary mb-3">
+                                    <i class="fas fa-heart me-2"></i>
+                                    {% trans 'رسالتنا' %}
+                                </h4>
+                                <p class="card-text">
+                                    مرافقة المرأة السورية في رحلتها نحو الوعي والاتزان، ومنحها المساحة الآمنة 
+                                    لتعيد اكتشاف ذاتها، وتدرك حقوقها وواجباتها، لتنهض بدورها بقوةٍ واتزان
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Description -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5">
+                    <h3 class="section-title">{% trans 'فلسفتنا في التمكين' %}</h3>
+                </div>
+                <div class="bg-white p-4 rounded-3 shadow-sm">
+                    <p class="lead text-center mb-4">
+                        نؤمن بأن تمكين المرأة الحقيقي يبدأ من داخلها، حيث معرفة الذات وتطويرها 
+                        وفهم الحقوق والواجبات والتوازن بينهما، في بيئة داعمة تُصغي وترافق، 
+                        وتحاور وتناقش سعياً لتطوير المهارات وتوظيف الخبرات.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="section-title">{% trans 'قيمنا الأساسية' %}</h3>
+            <p class="text-muted">{% trans 'القيم التي نسترشد بها في عملنا ومسيرتنا' %}</p>
+        </div>
+        
+        <div class="values-grid">
+            <div class="value-item">
+                <div class="value-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h5>الوسطية والإنصاف</h5>
+                <p class="text-muted">نؤمن بالتوازن والعدالة في جميع أعمالنا وقراراتنا</p>
+            </div>
+            
+            <div class="value-item">
+                <div class="value-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h5>الإصلاح والحكمة</h5>
+                <p class="text-muted">نسعى للإصلاح بحكمة وتدبر وفهم عميق للواقع</p>
+            </div>
+            
+            <div class="value-item">
+                <div class="value-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h5>الألفة والتواضع</h5>
+                <p class="text-muted">نبني جسور التواصل بالتواضع والمحبة</p>
+            </div>
+            
+            <div class="value-item">
+                <div class="value-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5>الالتزام والجدية</h5>
+                <p class="text-muted">نتميز بالالتزام والجدية في تنفيذ مهامنا</p>
+            </div>
+            
+            <div class="value-item">
+                <div class="value-icon">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h5>الحياء والوقار</h5>
+                <p class="text-muted">نحافظ على القيم الأصيلة والوقار في التعامل</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Goals Section -->
+<section class="goals-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="section-title">{% trans 'أهدافنا' %}</h3>
+            <p class="text-muted">{% trans 'الأهداف التي نسعى لتحقيقها من خلال برامجنا ومبادراتنا' %}</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="goal-item">
+                    <div class="goal-number">1</div>
+                    <div>
+                        <h5 class="mb-2">رفع الوعي الذاتي والقيم التربوية</h5>
+                        <p class="text-muted mb-0">رفع الوعي الذاتي للمرأة، ونشر القيم الأسرية والتربوية الإيجابية</p>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">2</div>
+                    <div>
+                        <h5 class="mb-2">تطوير المهارات الحياتية والقيادية</h5>
+                        <p class="text-muted mb-0">تطوير شخصية المرأة ومهاراتها الحياتية والقيادية</p>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">3</div>
+                    <div>
+                        <h5 class="mb-2">دعم الإرادة وتعريف الحقوق والواجبات</h5>
+                        <p class="text-muted mb-0">المساهمة في دعم إرادة المرأة وتعريفها بحقوقها وواجباتها</p>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">4</div>
+                    <div>
+                        <h5 class="mb-2">إعداد الكوادر النسائية القيادية</h5>
+                        <p class="text-muted mb-0">إعداد كوادر نسائية قيادية قادرة على إحداث أثر حقيقي في محيطها الاجتماعي والمساهمة في صناعة نموذج للمرأة الناجحة</p>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">5</div>
+                    <div>
+                        <h5 class="mb-2">تفعيل الدور الأساسي والثانوي للمرأة</h5>
+                        <p class="text-muted mb-0">العمل على تفعيل دور المرأة الأساسي باعتبارها مربّية وصانعة الأجيال ودورها الثانوي باعتبارها شريكة في إعادة بناء المجتمع</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We Do Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="section-title">{% trans 'مجالات عملنا' %}</h3>
+            <p class="text-muted">{% trans 'الأنشطة والبرامج التي نقدمها لخدمة المجتمع' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="d-flex align-items-start mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle p-3">
+                            <i class="fas fa-comments fa-lg"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">جلسات دعم فردي وجماعي</h5>
+                        <p class="text-muted">جلسات مع متخصصات لتقديم الدعم النفسي والاجتماعي</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="d-flex align-items-start mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle p-3">
+                            <i class="fas fa-chalkboard-teacher fa-lg"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">ورشات تدريبية ومحاضرات</h5>
+                        <p class="text-muted">برامج تدريبية متخصصة ومحاضرات توعوية وبرامج إثرائية</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="d-flex align-items-start mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle p-3">
+                            <i class="fas fa-graduation-cap fa-lg"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">برامج تأهيل مهني وتعليمي</h5>
+                        <p class="text-muted">برامج متخصصة لتطوير المهارات المهنية والتعليمية</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="d-flex align-items-start mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle p-3">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">أنشطة تفاعلية وشراكات</h5>
+                        <p class="text-muted">أنشطة تفاعلية متنوعة وشراكات مجتمعية فعالة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+{% if team_members %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="section-title">{% trans 'فريق العمل' %}</h3>
+            <p class="text-muted">{% trans 'الفريق المتميز الذي يعمل على تحقيق رسالتنا' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for member in team_members %}
+            <div class="col-lg-4 col-md-6">
+                <div class="team-card card border-0 shadow-sm text-center h-100">
+                    {% if member.photo %}
+                    <img src="{{ member.photo.url }}" class="card-img-top team-photo" alt="{{ member.name_ar }}"
+                         style="height: 300px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-user fa-4x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ member.name_ar }}</h5>
+                        <p class="text-secondary mb-3">{{ member.position_ar }}</p>
+                        {% if member.bio_ar %}
+                        <p class="card-text small text-muted">{{ member.bio_ar|truncatewords:15 }}</p>
+                        {% endif %}
+                        
+                        <div class="team-social">
+                            {% if member.email %}
+                            <a href="mailto:{{ member.email }}" class="btn btn-sm btn-outline-primary me-2" title="البريد الإلكتروني">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.phone %}
+                            <a href="tel:{{ member.phone }}" class="btn btn-sm btn-outline-primary me-2" title="الهاتف">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.facebook %}
+                            <a href="{{ member.facebook }}" target="_blank" class="btn btn-sm btn-outline-primary me-2" title="فيسبوك">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.linkedin %}
+                            <a href="{{ member.linkedin }}" target="_blank" class="btn btn-sm btn-outline-primary" title="لينكدإن">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Statistics Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="statistics">
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">{% trans 'مستفيدة' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">{% trans 'ورشة تدريبية' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">25+</span>
+                        <span class="stat-label">{% trans 'برنامج تأهيلي' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">3</span>
+                        <span class="stat-label">{% trans 'سنوات من العمل' %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h3 class="mb-4">{% trans 'انضمي إلينا في رحلة التمكين' %}</h3>
+        <p class="lead text-muted mb-4">
+            {% trans 'كوني جزءاً من التغيير الإيجابي في مجتمعك' %}
+        </p>
+        <div>
+            <a href="{% url 'contact:service_request' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+            </a>
+            <a href="{% url 'contact:index' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-phone"></i> {% trans 'تواصلي معنا' %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

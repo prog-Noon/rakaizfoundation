@@ -17,7 +17,8 @@ class SiteSettings(models.Model):
     site_name_en = models.CharField(max_length=100, default="Rakayez Foundation", verbose_name=_('اسم الموقع - إنجليزي'))
     site_name_tr = models.CharField(max_length=100, default="Rakayez Vakfı", verbose_name=_('اسم الموقع - تركي'))
     
-    logo = models.ImageField(upload_to='settings/', verbose_name=_('الشعار'))
+    logo = models.ImageField(upload_to='settings/', verbose_name=_('الشعار'),blank=True,
+    null=True)
     favicon = models.ImageField(upload_to='settings/', blank=True, verbose_name=_('أيقونة المتصفح'))
     
     about_ar = RichTextField(verbose_name=_('نبذة عن المؤسسة - عربي'))

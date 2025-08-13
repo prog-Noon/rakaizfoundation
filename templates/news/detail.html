@@ -1,0 +1,279 @@
+<!-- templates/news/detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ news.title_ar }} - {{ site_settings.site_name_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.news-detail-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+    min-height: 60vh;
+}
+
+.news-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+.news-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 1rem 0;
+}
+
+.news-meta-detail {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.share-buttons {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 100px;
+}
+
+.share-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+}
+
+.share-btn.facebook {
+    background: #1877f2;
+    color: white;
+}
+
+.share-btn.twitter {
+    background: #1da1f2;
+    color: white;
+}
+
+.share-btn.whatsapp {
+    background: #25d366;
+    color: white;
+}
+
+.related-news {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+.related-news .card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 10px;
+}
+
+.related-news .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="news-detail-hero text-white">
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-lg-8">
+                <div class="news-meta mb-3">
+                    {% if news.category %}
+                    <span class="badge bg-light text-dark me-2">{{ news.category.name_ar }}</span>
+                    {% endif %}
+                    {% if news.is_featured %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-star"></i> {% trans 'مميز' %}
+                    </span>
+                    {% endif %}
+                </div>
+                <h1 class="display-5 fw-bold mb-4">{{ news.title_ar }}</h1>
+                <div class="news-meta">
+                    <span class="me-4">
+                        <i class="fas fa-calendar"></i> {{ news.published_at|date:"d F Y" }}
+                    </span>
+                    <span class="me-4">
+                        <i class="fas fa-eye"></i> {{ news.views }} {% trans 'مشاهدة' %}
+                    </span>
+                    {% if news.author %}
+                    <span>
+                        <i class="fas fa-user"></i> {{ news.author.get_full_name|default:news.author.username }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- News Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Featured Image -->
+                {% if news.featured_image %}
+                <div class="mb-4">
+                    <img src="{{ news.featured_image.url }}" alt="{{ news.title_ar }}" 
+                         class="img-fluid rounded shadow">
+                </div>
+                {% endif %}
+                
+                <!-- Article Content -->
+                <article class="news-content">
+                    {{ news.content_ar|safe }}
+                </article>
+                
+                <!-- Tags -->
+                {% if news.tags.all %}
+                <div class="mt-4">
+                    <h6>{% trans 'العلامات' %}:</h6>
+                    {% for tag in news.tags.all %}
+                    <span class="badge bg-secondary me-2">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Share Buttons -->
+                <div class="share-buttons mb-4">
+                    <h6 class="mb-3">{% trans 'شارك الخبر' %}</h6>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                       target="_blank" class="share-btn facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ news.title_ar }}" 
+                       target="_blank" class="share-btn twitter">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://wa.me/?text={{ news.title_ar }} {{ request.build_absolute_uri }}" 
+                       target="_blank" class="share-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+                
+                <!-- News Meta Details -->
+                <div class="news-meta-detail">
+                    <h6 class="mb-3">{% trans 'تفاصيل الخبر' %}</h6>
+                    <p class="mb-2">
+                        <strong>{% trans 'تاريخ النشر' %}:</strong><br>
+                        {{ news.published_at|date:"l، d F Y" }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>{% trans 'عدد المشاهدات' %}:</strong><br>
+                        {{ news.views }}
+                    </p>
+                    {% if news.category %}
+                    <p class="mb-2">
+                        <strong>{% trans 'التصنيف' %}:</strong><br>
+                        {{ news.category.name_ar }}
+                    </p>
+                    {% endif %}
+                    {% if news.author %}
+                    <p class="mb-0">
+                        <strong>{% trans 'الكاتب' %}:</strong><br>
+                        {{ news.author.get_full_name|default:news.author.username }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related News -->
+{% if related_news %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="related-news">
+            <h3 class="mb-4 text-center">{% trans 'أخبار ذات صلة' %}</h3>
+            <div class="row g-4">
+                {% for related in related_news %}
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        {% if related.featured_image %}
+                        <img src="{{ related.featured_image.url }}" class="card-img-top" 
+                             alt="{{ related.title_ar }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{% url 'news:detail' related.pk %}" class="text-decoration-none">
+                                    {{ related.title_ar }}
+                                </a>
+                            </h6>
+                            <p class="card-text small text-muted">
+                                {{ related.excerpt_ar|default:related.content_ar|truncatewords:15|safe }}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ related.published_at|date:"d M Y" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Navigation -->
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="{% trans 'تنقل بين الأخبار' %}">
+                    <div class="d-flex justify-content-between">
+                        {% if previous_news %}
+                        <a href="{% url 'news:detail' previous_news.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chevron-right"></i>
+                            {% trans 'الخبر السابق' %}
+                        </a>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                        
+                        <a href="{% url 'news:list' %}" class="btn btn-primary">
+                            <i class="fas fa-list"></i>
+                            {% trans 'جميع الأخبار' %}
+                        </a>
+                        
+                        {% if next_news %}
+                        <a href="{% url 'news:detail' next_news.pk %}" class="btn btn-outline-primary">
+                            {% trans 'الخبر التالي' %}
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

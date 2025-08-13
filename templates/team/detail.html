@@ -1,0 +1,458 @@
+
+<!-- templates/team/detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ member.name_ar }} - {{ site_settings.site_name_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.member-detail-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+    min-height: 70vh;
+}
+
+.member-detail-card {
+    background: white;
+    border-radius: 25px;
+    padding: 3rem;
+    margin-top: -120px;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+}
+
+.member-photo-large {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid white;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 2rem;
+    display: block;
+}
+
+.member-photo-placeholder-large {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    border: 6px solid white;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.member-photo-placeholder-large i {
+    font-size: 4rem;
+    color: #6c757d;
+}
+
+.member-name-large {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.member-position-large {
+    font-size: 1.3rem;
+    color: #6b73ff;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.member-bio-full {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #495057;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.member-contact-info {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.contact-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.member-social-large {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.social-link-large {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    color: #6c757d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 1.5rem;
+}
+
+.social-link-large:hover {
+    transform: translateY(-5px);
+    color: white;
+}
+
+.social-link-large.email:hover {
+    background: #e74c3c;
+}
+
+.social-link-large.phone:hover {
+    background: #27ae60;
+}
+
+.social-link-large.facebook:hover {
+    background: #3b5998;
+}
+
+.social-link-large.linkedin:hover {
+    background: #0077b5;
+}
+
+.achievements {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border-left: 4px solid #6b73ff;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.achievement-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.expertise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.expertise-tag {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .member-detail-card {
+        padding: 2rem;
+        margin-top: -80px;
+    }
+    
+    .member-name-large {
+        font-size: 2rem;
+    }
+    
+    .member-position-large {
+        font-size: 1.1rem;
+    }
+    
+    .member-photo-large,
+    .member-photo-placeholder-large {
+        width: 150px;
+        height: 150px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="member-detail-hero text-white">
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-4">
+                    {% trans 'تعرفي على' %} {{ member.name_ar }}
+                </h1>
+                <p class="lead">
+                    {% trans 'عضو متميز في فريق مؤسسة ركائز' %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Member Details -->
+<section class="py-5">
+    <div class="container">
+        <div class="member-detail-card">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <!-- Member Photo -->
+                    {% if member.photo %}
+                    <img src="{{ member.photo.url }}" alt="{{ member.name_ar }}" class="member-photo-large">
+                    {% else %}
+                    <div class="member-photo-placeholder-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Member Info -->
+                    <h2 class="member-name-large">{{ member.name_ar }}</h2>
+                    <p class="member-position-large">{{ member.position_ar }}</p>
+                    
+                    {% if member.bio_ar %}
+                    <div class="member-bio-full">
+                        {{ member.bio_ar|safe }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Expertise Tags -->
+                    <div class="expertise-tags">
+                        <span class="expertise-tag">{% trans 'تمكين المرأة' %}</span>
+                        <span class="expertise-tag">{% trans 'التطوير المهاري' %}</span>
+                        <span class="expertise-tag">{% trans 'الدعم النفسي' %}</span>
+                        <span class="expertise-tag">{% trans 'القيادة' %}</span>
+                    </div>
+                    
+                    <!-- Social Links -->
+                    <div class="member-social-large">
+                        {% if member.email %}
+                        <a href="mailto:{{ member.email }}" class="social-link-large email" title="البريد الإلكتروني">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        {% endif %}
+                        {% if member.phone %}
+                        <a href="tel:{{ member.phone }}" class="social-link-large phone" title="الهاتف">
+                            <i class="fas fa-phone"></i>
+                        </a>
+                        {% endif %}
+                        {% if member.facebook %}
+                        <a href="{{ member.facebook }}" target="_blank" class="social-link-large facebook" title="فيسبوك">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        {% endif %}
+                        {% if member.linkedin %}
+                        <a href="{{ member.linkedin }}" target="_blank" class="social-link-large linkedin" title="لينكدإن">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="member-contact-info">
+                    <h4 class="mb-4 text-center">{% trans 'معلومات التواصل' %}</h4>
+                    <div class="row">
+                        {% if member.email %}
+                        <div class="col-md-6">
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{% trans 'البريد الإلكتروني' %}</h6>
+                                    <p class="mb-0 text-muted">{{ member.email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if member.phone %}
+                        <div class="col-md-6">
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{% trans 'رقم الهاتف' %}</h6>
+                                    <p class="mb-0 text-muted">{{ member.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">
+                            {% trans 'يمكنك التواصل معها للاستفسار عن البرامج والخدمات المتاحة' %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Achievements -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="achievements">
+                    <h4 class="mb-4">{% trans 'الإنجازات والخبرات' %}</h4>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{% trans 'خبرة في تمكين المرأة' %}</h6>
+                            <p class="text-muted mb-0">أكثر من 3 سنوات في مجال تمكين المرأة وتطوير المهارات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{% trans 'تدريب المئات' %}</h6>
+                            <p class="text-muted mb-0">ساهمت في تدريب المئات من النساء في مختلف المجالات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{% trans 'العمل التطوعي' %}</h6>
+                            <p class="text-muted mb-0">التزام راسخ بالعمل التطوعي وخدمة المجتمع</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Navigation -->
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'team:list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i>
+                {% trans 'العودة للفريق' %}
+            </a>
+            
+            <a href="{% url 'contact:index' %}?member={{ member.name_ar }}" class="btn btn-primary">
+                <i class="fas fa-envelope"></i>
+                {% trans 'تواصل معها' %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+        </div>
+    </div>
+</section>
+
+<!-- Team Stats -->
+<section class="py-5">
+    <div class="container">
+        <div class="team-stats">
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ total_members|default:"12" }}</span>
+                        <span class="stat-label">{% trans 'عضو فريق' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">3+</span>
+                        <span class="stat-label">{% trans 'سنوات خبرة' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">{% trans 'مستفيدة' %}</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">{% trans 'برنامج' %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Filters -->
+<section class="py-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="team-filters text-center">
+                    <button class="filter-btn active" data-filter="all">
+                        {% trans 'جميع الأعضاء' %}
+                    </button>
+                    <button class="filter-btn" data-filter="management">
+                        {% trans 'الإدارة' %}
+                    </button>
+                    <button class="filter-btn" data-filter="trainers">
+                        {% trans 'المدربات' %}
+                    </button>
+                    <button class="filter-btn" data-filter="volunteers">
+                        {% trans 'المتطوعات' %}
+                    </button>
+                </div>
+            </div>
