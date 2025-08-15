@@ -1,4 +1,3 @@
-
 <!-- templates/core/home.html -->
 {% extends 'base.html' %}
 {% load static %}
@@ -6,205 +5,549 @@
 
 {% block title %}{{ site_settings.site_name_ar }} - {% trans 'الصفحة الرئيسية' %}{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Hero Section Specific Styles */
+    .hero-section {
+        background: var(--gradient);
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="lotus" x="0" y="0" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M7.5 3 Q3 7.5 7.5 12 Q12 7.5 7.5 3" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23lotus)"/></svg>') repeat;
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin-bottom: 2rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        animation: fadeInUp 1s ease;
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+        animation: fadeInUp 1s ease 0.2s both;
+    }
+
+    .hero-description {
+        font-size: 1.2rem;
+        margin-bottom: 3rem;
+        opacity: 0.9;
+        animation: fadeInUp 1s ease 0.4s both;
+    }
+
+    .hero-buttons {
+        animation: fadeInUp 1s ease 0.6s both;
+    }
+
+    .hero-image {
+        position: relative;
+        animation: fadeInRight 1s ease 0.3s both;
+    }
+
+    .logo-container {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .logo-container:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    }
+
+    .hero-logo {
+        max-width: 100%;
+        height: auto;
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+    }
+
+    /* About Preview Section */
+    .about-preview {
+        padding: 100px 0;
+        background: white;
+    }
+
+    /* Services Section */
+    .services-section {
+        padding: 100px 0;
+        background: var(--bg-gradient-light);
+    }
+
+    /* News Section */
+    .news-section {
+        background: white;
+        padding: 100px 0;
+    }
+
+    /* Team Section */
+    .team-section {
+        padding: 100px 0;
+        background: var(--bg-gradient-light);
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--light-blue), var(--light-maroon));
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-maroon);
+        margin-bottom: 2rem;
+    }
+
+    .cta-description {
+        font-size: 1.3rem;
+        color: #666;
+        margin-bottom: 3rem;
+    }
+
+    /* Responsive adjustments for hero */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+        }
+        
+        .hero-description {
+            font-size: 1rem;
+        }
+        
+        .logo-container {
+            padding: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section bg-gradient-primary text-white py-5">
+<section class="hero-section d-flex align-items-center">
+    <!-- Floating Elements -->
+    <div class="floating-element" style="top: 20%; right: 10%;">
+        <i class="fas fa-star text-white opacity-50" style="font-size: 2rem;"></i>
+    </div>
+    <div class="floating-element" style="top: 60%; right: 20%;">
+        <i class="fas fa-heart text-white opacity-50" style="font-size: 1.5rem;"></i>
+    </div>
+    <div class="floating-element" style="top: 40%; left: 15%;">
+        <i class="fas fa-seedling text-white opacity-50" style="font-size: 2.5rem;"></i>
+    </div>
+
     <div class="container">
-        <div class="row align-items-center min-vh-50">
+        <div class="row align-items-center min-vh-100">
             <div class="col-lg-6">
                 <div class="hero-content">
-                    <h1 class="display-4 fw-bold mb-4">
-                        {% trans 'مرحباً بكم في' %} {{ site_settings.site_name_ar }}
+                    <h1 class="hero-title text-white">
+                        {% trans 'مرحباً بكم في' %} {{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}
                     </h1>
+                    <h2 class="hero-subtitle text-white">
+                        "{% trans 'لأن المرأة جوهر التغيير' %}"
+                    </h2>
                     {% if site_settings.about_ar %}
-                        <p class="lead mb-4">{{ site_settings.about_ar|truncatewords:25|safe }}</p>
+                        <p class="hero-description text-white">
+                            {{ site_settings.about_ar|truncatewords:25|safe }}
+                        </p>
+                    {% else %}
+                        <p class="hero-description text-white">
+                            {% trans 'مؤسسة تنموية توعوية تُعنى بتفعيل دور المرأة السورية عبر برامج ومبادرات نوعية لبناء مجتمع واعٍ ومتوازن' %}
+                        </p>
                     {% endif %}
                     <div class="hero-buttons">
-                        <a href="{% url 'core:about' %}" class="btn btn-light btn-lg me-3">
-                            <i class="fas fa-info-circle"></i> {% trans 'تعرف علينا' %}
+                        <a href="{% url 'core:about' %}" class="btn-rakaez-primary btn-hero me-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% trans 'تعرف علينا' %}
                         </a>
-                        <a href="{% url 'contact:service_request' %}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+                        <a href="{% url 'contact:service_request' %}" class="btn-rakaez-outline btn-hero">
+                            <i class="fas fa-hand-holding-heart me-2"></i>
+                            {% trans 'طلب خدمة' %}
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="hero-image text-center">
-                    {% if site_settings.logo %}
-                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" 
-                             class="img-fluid hero-logo">
-                    {% else %}
-                        <div class="hero-placeholder">
-                            <i class="fas fa-heart fa-10x text-white-50"></i>
-                        </div>
-                    {% endif %}
+                    <div class="logo-container">
+                        {% if site_settings.logo %}
+                            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" class="hero-logo">
+                        {% else %}
+                            <img src="{% static 'images/logo.png' %}" alt="{{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}" class="hero-logo">
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Services Section -->
-{% if services %}
-    <section class="services-section py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="section-title">{% trans 'خدماتنا' %}</h2>
-                <p class="text-muted">{% trans 'نقدم مجموعة متنوعة من الخدمات المتخصصة' %}</p>
-            </div>
-            
-            <div class="row g-4">
-                {% for service in services %}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="service-card card h-100 border-0 shadow-sm">
-                            {% if service.image %}
-                                <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.title_ar }}">
-                            {% endif %}
-                            <div class="card-body text-center p-4">
-                                {% if service.icon %}
-                                    <div class="service-icon mb-3">
-                                        <i class="{{ service.icon }} fa-3x text-primary"></i>
-                                    </div>
-                                {% endif %}
-                                <h5 class="card-title">{{ service.title_ar }}</h5>
-                                <p class="card-text text-muted">{{ service.description_ar|truncatewords:15|safe }}</p>
-                                <a href="{% url 'services:detail' service.pk %}" class="btn btn-primary">
-                                    {% trans 'اقرأ المزيد' %}
-                                </a>
-                            </div>
-                        </div>
+<!-- About Section -->
+<section class="about-preview scroll-animate">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">{% trans 'من نحن' %}</h2>
+            <p class="lead text-muted">{% trans 'مؤسسة تنموية توعوية تُعنى بتفعيل دور المرأة السورية' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="rakaez-card">
+                    <div class="mission-icon">
+                        <i class="fas fa-eye"></i>
                     </div>
-                {% endfor %}
+                    <h4 class="text-primary mb-3">{% trans 'رؤيتنا' %}</h4>
+                    <p>
+                        {% trans 'امرأةٌ سوريةٌ واعية، متوازنة رغم عواصف الظروف، تقف على أرضٍ صلبة تمتاز بالتوازن والمعرفة، لتكون قلباً نابضاً لأسرةٍ سويّة، وروحاً حيّة تسهم في نهضة المجتمع' %}
+                    </p>
+                </div>
             </div>
             
-            <div class="text-center mt-5">
-                <a href="{% url 'services:list' %}" class="btn btn-outline-primary btn-lg">
-                    {% trans 'عرض جميع الخدمات' %}
-                </a>
+            <div class="col-lg-6">
+                <div class="rakaez-card">
+                    <div class="mission-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h4 class="text-primary mb-3">{% trans 'رسالتنا' %}</h4>
+                    <p>
+                        {% trans 'مرافقة المرأة السورية في رحلتها نحو الوعي والاتزان، ومنحها المساحة الآمنة لتعيد اكتشاف ذاتها، وتدرك حقوقها وواجباتها، لتنهض بدورها بقوةٍ واتزان' %}
+                    </p>
+                </div>
             </div>
         </div>
-    </section>
-{% endif %}
-
-<!-- Featured News Section -->
-{% if featured_news %}
-    <section class="news-section py-5 bg-light">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="section-title">{% trans 'آخر الأخبار والأنشطة' %}</h2>
-                <p class="text-muted">{% trans 'تابع آخر أخبارنا وأنشطتنا' %}</p>
-            </div>
-            
-            <div class="row g-4">
-                {% for news in featured_news %}
-                    <div class="col-lg-4">
-                        <article class="news-card card h-100 border-0 shadow-sm">
-                            {% if news.featured_image %}
-                                <img src="{{ news.featured_image.url }}" class="card-img-top" alt="{{ news.title_ar }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <div class="news-meta mb-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar"></i> {{ news.published_at|date:"d M Y" }}
-                                        <span class="mx-2">|</span>
-                                        <i class="fas fa-eye"></i> {{ news.views }}
-                                    </small>
-                                </div>
-                                <h5 class="card-title">
-                                    <a href="{% url 'news:detail' news.pk %}" class="text-decoration-none">
-                                        {{ news.title_ar }}
-                                    </a>
-                                </h5>
-                                <p class="card-text text-muted">{{ news.excerpt_ar }}</p>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                <a href="{% url 'news:detail' news.pk %}" class="btn btn-sm btn-outline-primary">
-                                    {% trans 'قراءة المزيد' %}
-                                </a>
-                            </div>
-                        </article>
-                    </div>
-                {% endfor %}
-            </div>
-            
-            <div class="text-center mt-5">
-                <a href="{% url 'news:list' %}" class="btn btn-outline-primary btn-lg">
-                    {% trans 'عرض جميع الأخبار' %}
-                </a>
-            </div>
-        </div>
-    </section>
-{% endif %}
-
-<!-- Team Section -->
-{% if team_members %}
-    <section class="team-section py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="section-title">{% trans 'فريق العمل' %}</h2>
-                <p class="text-muted">{% trans 'تعرف على فريقنا المتميز' %}</p>
-            </div>
-            
-            <div class="row g-4">
-                {% for member in team_members %}
-                    <div class="col-lg-3 col-md-6">
-                        <div class="team-card card border-0 shadow-sm text-center">
-                            {% if member.photo %}
-                                <img src="{{ member.photo.url }}" class="card-img-top team-photo" alt="{{ member.name_ar }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ member.name_ar }}</h5>
-                                <p class="text-primary">{{ member.position_ar }}</p>
-                                {% if member.bio_ar %}
-                                    <p class="card-text small text-muted">{{ member.bio_ar|truncatewords:10 }}</p>
-                                {% endif %}
-                                
-                                <div class="team-social mt-3">
-                                    {% if member.email %}
-                                        <a href="mailto:{{ member.email }}" class="btn btn-sm btn-outline-primary me-2">
-                                            <i class="fas fa-envelope"></i>
-                                        </a>
-                                    {% endif %}
-                                    {% if member.facebook %}
-                                        <a href="{{ member.facebook }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
-                                            <i class="fab fa-facebook-f"></i>
-                                        </a>
-                                    {% endif %}
-                                    {% if member.linkedin %}
-                                        <a href="{{ member.linkedin }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fab fa-linkedin-in"></i>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            
-            <div class="text-center mt-5">
-                <a href="{% url 'team:list' %}" class="btn btn-outline-primary btn-lg">
-                    {% trans 'عرض جميع أعضاء الفريق' %}
-                </a>
-            </div>
-        </div>
-    </section>
-{% endif %}
-
-<!-- Call to Action Section -->
-<section class="cta-section bg-primary text-white py-5">
-    <div class="container text-center">
-        <h2 class="mb-4">{% trans 'هل تحتاج إلى مساعدة؟' %}</h2>
-        <p class="lead mb-4">{% trans 'لا تتردد في التواصل معنا، نحن هنا لخدمتك' %}</p>
-        <div class="cta-buttons">
-            <a href="{% url 'contact:index' %}" class="btn btn-light btn-lg me-3">
-                <i class="fas fa-phone"></i> {% trans 'تواصل معنا' %}
-            </a>
-            <a href="{% url 'contact:service_request' %}" class="btn btn-outline-light btn-lg">
-                <i class="fas fa-hand-holding-heart"></i> {% trans 'طلب خدمة' %}
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'core:about' %}" class="btn-rakaez-primary">
+                <i class="fas fa-info-circle me-2"></i>
+                {% trans 'اعرف المزيد عنا' %}
             </a>
         </div>
     </div>
 </section>
+
+<!-- Services Section -->
+{% if services %}
+<section class="services-section scroll-animate">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">{% trans 'خدماتنا' %}</h2>
+            <p class="text-muted">{% trans 'نقدم مجموعة متنوعة من الخدمات المتخصصة' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for service in services %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card-enhanced rakaez-card">
+                        {% if service.image %}
+                            <img src="{{ service.image.url }}" class="service-image" alt="{{ service.title_ar }}">
+                        {% endif %}
+                        
+                        {% if service.icon %}
+                            <div class="service-icon">
+                                <i class="{{ service.icon }}"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <h5 class="mb-3">{{ service.title_ar }}</h5>
+                        <p class="text-muted mb-4">{{ service.description_ar|truncatewords:15|safe }}</p>
+                        <a href="{% url 'services:detail' service.pk %}" class="btn-rakaez-outline">
+                            {% trans 'اقرأ المزيد' %}
+                        </a>
+                        
+                        <div class="service-overlay">
+                            <span>{{ service.title_ar }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'services:list' %}" class="btn-rakaez-outline btn-lg">
+                {% trans 'عرض جميع الخدمات' %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured News Section -->
+{% if featured_news %}
+<section class="news-section scroll-animate">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">{% trans 'آخر الأخبار والأنشطة' %}</h2>
+            <p class="text-muted">{% trans 'تابع آخر أخبارنا وأنشطتنا' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for news in featured_news %}
+                <div class="col-lg-4">
+                    <article class="news-card-enhanced">
+                        {% if news.featured_image %}
+                            <img src="{{ news.featured_image.url }}" class="news-image" alt="{{ news.title_ar }}">
+                        {% endif %}
+                        
+                        <div class="news-content">
+                            <div class="news-meta mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i> {{ news.published_at|date:"d M Y" }}
+                                    {% if news.views %}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-eye me-1"></i> {{ news.views }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <h5 class="news-title mb-3">
+                                <a href="{% url 'news:detail' news.pk %}" class="text-decoration-none">
+                                    {{ news.title_ar }}
+                                </a>
+                            </h5>
+                            
+                            {% if news.excerpt_ar %}
+                                <p class="text-muted mb-4">{{ news.excerpt_ar }}</p>
+                            {% else %}
+                                <p class="text-muted mb-4">{{ news.content_ar|truncatewords:20|striptags }}</p>
+                            {% endif %}
+                            
+                            <a href="{% url 'news:detail' news.pk %}" class="btn-rakaez-outline">
+                                {% trans 'قراءة المزيد' %}
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'news:list' %}" class="btn-rakaez-outline btn-lg">
+                {% trans 'عرض جميع الأخبار' %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Team Section -->
+{% if team_members %}
+<section class="team-section scroll-animate">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">{% trans 'فريق العمل' %}</h2>
+            <p class="text-muted">{% trans 'تعرف على فريقنا المتميز' %}</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for member in team_members %}
+                <div class="col-lg-3 col-md-6">
+                    <div class="team-member-card text-center">
+                        {% if member.photo %}
+                            <img src="{{ member.photo.url }}" class="member-photo" alt="{{ member.name_ar }}">
+                        {% else %}
+                            <div class="member-photo bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user fa-4x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="member-info">
+                            <h5 class="mb-2">{{ member.name_ar }}</h5>
+                            <p class="text-primary mb-3">{{ member.position_ar }}</p>
+                            
+                            {% if member.bio_ar %}
+                                <p class="text-muted small mb-3">{{ member.bio_ar|truncatewords:10 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="social-overlay">
+                            {% if member.email %}
+                                <a href="mailto:{{ member.email }}" class="btn btn-sm btn-light me-2" title="{% trans 'البريد الإلكتروني' %}">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            {% endif %}
+                            {% if member.phone %}
+                                <a href="tel:{{ member.phone }}" class="btn btn-sm btn-light me-2" title="{% trans 'الهاتف' %}">
+                                    <i class="fas fa-phone"></i>
+                                </a>
+                            {% endif %}
+                            {% if member.facebook %}
+                                <a href="{{ member.facebook }}" target="_blank" class="btn btn-sm btn-light me-2" title="{% trans 'فيسبوك' %}">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            {% endif %}
+                            {% if member.linkedin %}
+                                <a href="{{ member.linkedin }}" target="_blank" class="btn btn-sm btn-light" title="{% trans 'لينكد إن' %}">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if team_members|length > 4 %}
+            <div class="text-center mt-5">
+                <a href="{% url 'team:list' %}" class="btn-rakaez-outline btn-lg">
+                    {% trans 'عرض جميع أعضاء الفريق' %}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Statistics Section -->
+<section class="stats-container scroll-animate">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item-enhanced">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">{% trans 'مستفيدة' %}</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item-enhanced">
+                    <div class="stat-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="stat-number">50+</span>
+                    <span class="stat-label">{% trans 'ورشة تدريبية' %}</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item-enhanced">
+                    <div class="stat-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <span class="stat-number">25+</span>
+                    <span class="stat-label">{% trans 'برنامج تأهيلي' %}</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item-enhanced">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">{% trans 'سنوات من العمل' %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section scroll-animate">
+    <div class="container">
+        <h2 class="cta-title">{% trans 'انضمي إلينا في رحلة التمكين' %}</h2>
+        <p class="cta-description">
+            {% trans 'كوني جزءاً من التغيير الإيجابي في مجتمعك' %}
+        </p>
+        <div>
+            <a href="{% url 'contact:service_request' %}" class="btn-rakaez-primary btn-hero me-3">
+                <i class="fas fa-hand-holding-heart me-2"></i>
+                {% trans 'طلب خدمة' %}
+            </a>
+            <a href="{% url 'contact:index' %}" class="btn-rakaez-outline btn-hero">
+                <i class="fas fa-phone me-2"></i>
+                {% trans 'تواصلي معنا' %}
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Counter animation for statistics
+    function animateCounters() {
+        const counters = document.querySelectorAll('.stat-number');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent.replace(/\D/g, ''));
+            const suffix = counter.textContent.replace(/\d/g, '');
+            let count = 0;
+            const increment = target / 100;
+            
+            const updateCounter = () => {
+                if (count < target) {
+                    count += increment;
+                    counter.textContent = Math.ceil(count) + suffix;
+                    setTimeout(updateCounter, 20);
+                } else {
+                    counter.textContent = target + suffix;
+                }
+            };
+            
+            updateCounter();
+        });
+    }
+
+    // Trigger counter animation when stats section is visible
+    const statsSection = document.querySelector('.stats-container');
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                statsObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    if (statsSection) {
+        statsObserver.observe(statsSection);
+    }
+
+    // Parallax effect for hero section
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const parallaxElements = document.querySelectorAll('.floating-element');
+        
+        parallaxElements.forEach((element, index) => {
+            const speed = 0.5 + (index * 0.1);
+            element.style.transform = `translateY(${scrolled * speed}px)`;
+        });
+    });
+
+    // Initialize scroll animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add scroll-animate class to elements that should animate
+        const animateElements = document.querySelectorAll('.rakaez-card, .service-card-enhanced, .team-member-card, .news-card-enhanced, .stat-item-enhanced');
+        animateElements.forEach(el => {
+            el.classList.add('scroll-animate');
+        });
+    });
+</script>
 {% endblock %}

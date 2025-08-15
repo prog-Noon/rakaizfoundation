@@ -9,8 +9,9 @@ from news.models import News
 from services.models import Service
 from team.models import TeamMember
 
-class BaseView(TemplateView):
-    """عرض أساسي لجميع العروض"""
+# تعديل BaseView لتعمل مع جميع أنواع الـ Views
+class BaseContextMixin:
+    """Mixin أساسي لإضافة السياق المشترك"""
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
@@ -18,6 +19,11 @@ class BaseView(TemplateView):
         except SiteSettings.DoesNotExist:
             context['site_settings'] = None
         return context
+
+# الـ BaseView الجديد للـ TemplateView
+class BaseView(BaseContextMixin, TemplateView):
+    """عرض أساسي للـ TemplateView"""
+    pass
 
 class HomeView(BaseView):
     """الصفحة الرئيسية"""

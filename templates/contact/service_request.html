@@ -1,0 +1,577 @@
+<!-- templates/contact/service_request.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ site_settings.site_name_ar }} - {% trans 'طلب خدمة' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.service-request-hero {
+    background: linear-gradient(135deg, #6b73ff 0%, #9b4192 100%);
+    position: relative;
+}
+
+.request-form-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    margin-top: -100px;
+    position: relative;
+    z-index: 10;
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    margin: 0 1rem;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: #e9ecef;
+    color: #6c757d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.step.active .step-number {
+    background: linear-gradient(135deg, #6b73ff, #9b4192);
+    color: white;
+}
+
+.step.completed .step-number {
+    background: #28a745;
+    color: white;
+}
+
+.service-card {
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.service-card:hover {
+    border-color: #6b73ff;
+    box-shadow: 0 5px 15px rgba(107, 115, 255, 0.2);
+}
+
+.service-card.selected {
+    border-color: #6b73ff;
+    background: linear-gradient(135deg, rgba(107, 115, 255, 0.1), rgba(155, 65, 146, 0.1));
+}
+
+.service-card .service-icon {
+    font-size: 2rem;
+    color: #6b73ff;
+    margin-bottom: 1rem;
+}
+
+.priority-selector {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.priority-option {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.priority-option:hover {
+    border-color: #6b73ff;
+}
+
+.priority-option.selected {
+    border-color: #6b73ff;
+    background: linear-gradient(135deg, rgba(107, 115, 255, 0.1), rgba(155, 65, 146, 0.1));
+}
+
+.priority-option.urgent {
+    border-color: #dc3545;
+}
+
+.priority-option.urgent.selected {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.form-step {
+    min-height: 400px;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.btn-next, .btn-prev {
+    min-width: 120px;
+}
+
+.priority-option i {
+    font-size: 2rem;
+}
+
+@media (max-width: 768px) {
+    .step-indicator {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .step {
+        justify-content: center;
+    }
+    
+    .priority-selector {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="service-request-hero text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    {% trans 'طلب خدمة' %}
+                </h1>
+                <p class="lead">
+                    {% trans 'احصلي على الخدمة التي تحتاجينها من خلال تعبئة النموذج التالي' %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Request Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="request-form-card">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step active" id="step1">
+                            <div class="step-number">1</div>
+                            <span>{% trans 'المعلومات الشخصية' %}</span>
+                        </div>
+                        <div class="step" id="step2">
+                            <div class="step-number">2</div>
+                            <span>{% trans 'نوع الخدمة' %}</span>
+                        </div>
+                        <div class="step" id="step3">
+                            <div class="step-number">3</div>
+                            <span>{% trans 'التفاصيل' %}</span>
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="serviceRequestForm">
+                        {% csrf_token %}
+                        
+                        <!-- Step 1: Personal Information -->
+                        <div class="form-step active" id="step1Content">
+                            <h4 class="mb-4 text-center">{% trans 'معلوماتك الشخصية' %}</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'الاسم الكامل' %} *</label>
+                                        <input type="text" name="name" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'البريد الإلكتروني' %} *</label>
+                                        <input type="email" name="email" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'رقم الهاتف' %} *</label>
+                                        <input type="tel" name="phone" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'العمر' %}</label>
+                                        <input type="number" name="age" class="form-control" min="18" max="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary btn-next">
+                                    {% trans 'التالي' %} <i class="fas fa-arrow-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Service Selection -->
+                        <div class="form-step" id="step2Content" style="display: none;">
+                            <h4 class="mb-4 text-center">{% trans 'اختاري نوع الخدمة' %}</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="service-card" data-service="counseling">
+                                        <div class="service-icon">
+                                            <i class="fas fa-comments"></i>
+                                        </div>
+                                        <h6>{% trans 'جلسات دعم فردي' %}</h6>
+                                        <p class="small text-muted">{% trans 'استشارات نفسية واجتماعية فردية' %}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="service-card" data-service="group-support">
+                                        <div class="service-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <h6>{% trans 'جلسات دعم جماعي' %}</h6>
+                                        <p class="small text-muted">{% trans 'مجموعات دعم ومشاركة الخبرات' %}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="service-card" data-service="training">
+                                        <div class="service-icon">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                        </div>
+                                        <h6>{% trans 'ورشات تدريبية' %}</h6>
+                                        <p class="small text-muted">{% trans 'برامج تطوير المهارات والقدرات' %}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="service-card" data-service="vocational">
+                                        <div class="service-icon">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </div>
+                                        <h6>{% trans 'تأهيل مهني' %}</h6>
+                                        <p class="small text-muted">{% trans 'برامج التأهيل والتدريب المهني' %}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="service" id="selectedService">
+                            
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-prev me-2">
+                                    <i class="fas fa-arrow-right"></i> {% trans 'السابق' %}
+                                </button>
+                                <button type="button" class="btn btn-primary btn-next">
+                                    {% trans 'التالي' %} <i class="fas fa-arrow-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Details -->
+                        <div class="form-step" id="step3Content" style="display: none;">
+                            <h4 class="mb-4 text-center">{% trans 'تفاصيل إضافية' %}</h4>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">{% trans 'أولوية الطلب' %}</label>
+                                <div class="priority-selector">
+                                    <div class="priority-option" data-priority="normal">
+                                        <i class="fas fa-clock text-success mb-2 d-block"></i>
+                                        <h6>{% trans 'عادي' %}</h6>
+                                        <small>{% trans 'خلال أسبوع' %}</small>
+                                    </div>
+                                    <div class="priority-option" data-priority="urgent">
+                                        <i class="fas fa-exclamation-triangle text-warning mb-2 d-block"></i>
+                                        <h6>{% trans 'مستعجل' %}</h6>
+                                        <small>{% trans 'خلال 48 ساعة' %}</small>
+                                    </div>
+                                    <div class="priority-option urgent" data-priority="emergency">
+                                        <i class="fas fa-exclamation-circle text-danger mb-2 d-block"></i>
+                                        <h6>{% trans 'طارئ' %}</h6>
+                                        <small>{% trans 'فوراً' %}</small>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="priority" id="selectedPriority">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{% trans 'وصف التحدي أو الحاجة' %} *</label>
+                                <textarea name="description" class="form-control" rows="4" required></textarea>
+                                <div class="form-text">{% trans 'صفي لنا بالتفصيل ما تحتاجين المساعدة فيه' %}</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'هل لديك خبرة سابقة؟' %}</label>
+                                        <select class="form-control" name="experience">
+                                            <option value="">{% trans 'اختاري...' %}</option>
+                                            <option value="none">{% trans 'لا توجد خبرة' %}</option>
+                                            <option value="little">{% trans 'خبرة قليلة' %}</option>
+                                            <option value="moderate">{% trans 'خبرة متوسطة' %}</option>
+                                            <option value="advanced">{% trans 'خبرة متقدمة' %}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">{% trans 'الوقت المفضل للتواصل' %}</label>
+                                        <select class="form-control" name="preferred_time">
+                                            <option value="">{% trans 'اختاري...' %}</option>
+                                            <option value="morning">{% trans 'الصباح (9-12)' %}</option>
+                                            <option value="afternoon">{% trans 'بعد الظهر (12-5)' %}</option>
+                                            <option value="evening">{% trans 'المساء (5-8)' %}</option>
+                                            <option value="flexible">{% trans 'مرن' %}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{% trans 'ملاحظات إضافية' %}</label>
+                                <textarea class="form-control" name="notes" rows="3" 
+                                          placeholder="{% trans 'أي معلومات إضافية تودين مشاركتها معنا...' %}"></textarea>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-prev me-2">
+                                    <i class="fas fa-arrow-right"></i> {% trans 'السابق' %}
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    {% trans 'إرسال الطلب' %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Information Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3>{% trans 'ما يحدث بعد تقديم الطلب؟' %}</h3>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                        <i class="fas fa-envelope-open"></i>
+                    </div>
+                </div>
+                <h6>{% trans 'استلام الطلب' %}</h6>
+                <p class="small text-muted">{% trans 'نستلم طلبك ونراجعه بعناية' %}</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+                <h6>{% trans 'التقييم الأولي' %}</h6>
+                <p class="small text-muted">{% trans 'نقيم احتياجاتك ونحدد الخدمة المناسبة' %}</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                </div>
+                <h6>{% trans 'التواصل معك' %}</h6>
+                <p class="small text-muted">{% trans 'نتواصل معك لتحديد موعد أو مناقشة التفاصيل' %}</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #6b73ff, #9b4192); border-radius: 50%; color: white; font-size: 2rem;">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                </div>
+                <h6>{% trans 'بداية الخدمة' %}</h6>
+                <p class="small text-muted">{% trans 'نبدأ في تقديم الخدمة المناسبة لك' %}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 3;
+    
+    // Step navigation
+    function showStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        
+        // Show current step
+        document.getElementById(`step${step}Content`).style.display = 'block';
+        document.getElementById(`step${step}`).classList.add('active');
+        
+        // Mark completed steps
+        for (let i = 1; i < step; i++) {
+            document.getElementById(`step${i}`).classList.add('completed');
+        }
+    }
+    
+    // Next button functionality
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (currentStep < totalSteps) {
+                // Validate current step
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        });
+    });
+    
+    // Previous button functionality
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+    
+    // Service selection
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedService').value = this.dataset.service;
+        });
+    });
+    
+    // Priority selection
+    document.querySelectorAll('.priority-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.priority-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedPriority').value = this.dataset.priority;
+        });
+    });
+    
+    // Form validation
+    function validateStep(step) {
+        const stepContent = document.getElementById(`step${step}Content`);
+        const requiredFields = stepContent.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Special validation for step 2 (service selection)
+        if (step === 2) {
+            const selectedService = document.getElementById('selectedService').value;
+            if (!selectedService) {
+                showNotification('{% trans "يرجى اختيار نوع الخدمة" %}', 'warning');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Form submission
+    document.getElementById('serviceRequestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate final step
+        if (!validateStep(3)) {
+            return;
+        }
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% trans "جاري الإرسال..." %}';
+        
+        // Simulate submission
+        setTimeout(() => {
+            // Success
+            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>{% trans "تم الإرسال بنجاح!" %}';
+            submitBtn.className = 'btn btn-success btn-lg';
+            
+            showNotification('{% trans "تم إرسال طلب الخدمة بنجاح! سنتواصل معك قريباً" %}', 'success');
+            
+            // Reset after delay
+            setTimeout(() => {
+                window.location.href = '{% url "contact:index" %}';
+            }, 2000);
+            
+        }, 2000);
+    });
+    
+    // Pre-select service if provided via URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const serviceParam = urlParams.get('service');
+    if (serviceParam) {
+        const serviceCard = document.querySelector(`[data-service="${serviceParam}"]`);
+        if (serviceCard) {
+            serviceCard.click();
+        }
+    }
+});
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -51,13 +51,23 @@ class ServiceRequest(BaseModel):
     email = models.EmailField(verbose_name=_('البريد الإلكتروني'))
     phone = models.CharField(max_length=20, verbose_name=_('رقم الهاتف'))
     
-    service = models.ForeignKey('services.Service', on_delete=models.CASCADE, verbose_name=_('الخدمة'))
+    # إضافة related_name لحل التعارض
+    service = models.ForeignKey(
+        'services.Service', 
+        on_delete=models.CASCADE, 
+        verbose_name=_('الخدمة'),
+        related_name='contact_requests'  # هذا يحل التعارض
+    )
     description = models.TextField(verbose_name=_('وصف الطلب'))
     
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name=_('الأولوية'))
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending', verbose_name=_('الحالة'))
     
     preferred_date = models.DateField(blank=True, null=True, verbose_name=_('التاريخ المفضل'))
+    
+    # إضافة حقول مفيدة إضافية
+    admin_notes = models.TextField(blank=True, verbose_name=_('ملاحظات الإدارة'))
+    response_date = models.DateTimeField(blank=True, null=True, verbose_name=_('تاريخ الرد'))
     
     class Meta:
         verbose_name = _('طلب خدمة')
@@ -66,3 +76,31 @@ class ServiceRequest(BaseModel):
     
     def __str__(self):
         return f"{self.name} - {self.service.title_ar}"
+    
+    def mark_as_processing(self):
+        """تحديد الحالة كـ قيد المعالجة"""
+        self.status = 'processing'
+        self.save(update_fields=['status'])
+    
+    def mark_as_completed(self):
+        """تحديد الحالة كـ مكتمل"""
+        self.status = 'completed'
+        from django.utils import timezone
+        self.response_date = timezone.now()
+        self.save(update_fields=['status', 'response_date'])
+    
+    @property
+    def is_urgent(self):
+        """تحديد إذا كان الطلب عاجل"""
+        return self.priority == 'urgent'
+    
+    @property
+    def status_color(self):
+        """إرجاع لون مناسب للحالة"""
+        colors = {
+            'pending': 'warning',
+            'processing': 'info', 
+            'completed': 'success',
+            'cancelled': 'danger'
+        }
+        return colors.get(self.status, 'secondary')
