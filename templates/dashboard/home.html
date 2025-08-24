@@ -1,0 +1,332 @@
+# templates/dashboard/home.html
+{% extends 'dashboard/base.html' %}
+{% load dashboard_tags %}
+{% load static %}
+
+{% block title %}الصفحة الرئيسية{% endblock %}
+{% block page_title %}لوحة التحكم الرئيسية{% endblock %}
+{% block page_description %}نظرة شاملة على إحصائيات الموقع{% endblock %}
+
+{% block content %}
+<!-- إحصائيات سريعة -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="stats-number">{{ total_services }}</div>
+            <div class="stats-label">إجمالي الخدمات</div>
+            <small class="opacity-75">
+                <i class="fas fa-arrow-up"></i>
+                {{ new_services_week|default:0 }} جديد هذا الأسبوع
+            </small>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="stats-number">{{ total_articles }}</div>
+            <div class="stats-label">المقالات المنشورة</div>
+            <small class="opacity-75">
+                <i class="fas fa-arrow-up"></i>
+                {{ new_articles_week }} جديد هذا الأسبوع
+            </small>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stats-number">{{ total_messages }}</div>
+            <div class="stats-label">رسائل التواصل</div>
+            <small class="opacity-75">
+                <i class="fas fa-arrow-up"></i>
+                {{ new_messages_week }} جديد هذا الأسبوع
+            </small>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="stats-number">{{ total_service_requests }}</div>
+            <div class="stats-label">طلبات الخدمات</div>
+            <small class="opacity-75">
+                <i class="fas fa-arrow-up"></i>
+                {{ new_requests_week }} جديد هذا الأسبوع
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- الرسوم البيانية والجداول -->
+<div class="row">
+    <!-- رسم بياني للرسائل -->
+    <div class="col-lg-8 mb-4">
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    إحصائيات الرسائل - آخر 7 أيام
+                </h5>
+                <div class="chart-container">
+                    <canvas id="messagesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- إحصائيات سريعة -->
+    <div class="col-lg-4 mb-4">
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-tachometer-alt text-success me-2"></i>
+                    إحصائيات الرسائل
+                </h5>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">غير مقروءة</span>
+                        <span class="badge bg-danger">{{ messages_stats.unread }}</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-danger" style="width: {{ messages_stats.unread|percentage:messages_stats.total }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">مقروءة</span>
+                        <span class="badge bg-success">{{ messages_stats.read }}</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-success" style="width: {{ messages_stats.read|percentage:messages_stats.total }}%"></div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="small text-muted mb-3">طلبات الخدمات</h6>
+                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small">قيد الانتظار</span>
+                        <span class="badge bg-warning">{{ requests_stats.pending }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small">قيد التنفيذ</span>
+                        <span class="badge bg-info">{{ requests_stats.in_progress }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small">مكتملة</span>
+                        <span class="badge bg-success">{{ requests_stats.completed }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- آخر الأنشطة -->
+<div class="row">
+    <!-- آخر الرسائل -->
+    <div class="col-lg-6 mb-4">
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-envelope text-info me-2"></i>
+                    آخر الرسائل
+                    <a href="{% url 'dashboard:messages' %}" class="btn btn-sm btn-outline-primary float-start">
+                        عرض الكل
+                    </a>
+                </h5>
+                
+                {% for message in recent_messages %}
+                    <div class="d-flex align-items-center mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="flex-shrink-0">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">{{ message.name }}</h6>
+                            <p class="mb-1 text-muted small">{{ message.subject|truncatechars:40 }}</p>
+                            <small class="text-muted">{{ message.created_at|time_since_arabic }}</small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            {% if not message.is_read %}
+                                <span class="badge bg-danger">جديد</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center py-4">لا توجد رسائل حديثة</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- آخر طلبات الخدمات -->
+    <div class="col-lg-6 mb-4">
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-clipboard-list text-warning me-2"></i>
+                    آخر طلبات الخدمات
+                    <a href="#" class="btn btn-sm btn-outline-primary float-start">
+                        عرض الكل
+                    </a>
+                </h5>
+                
+                {% for request in recent_requests %}
+                    <div class="d-flex align-items-center mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="flex-shrink-0">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-handshake text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">{{ request.name }}</h6>
+                            <p class="mb-1 text-muted small">{{ request.service.title_ar|truncatechars:30 }}</p>
+                            <small class="text-muted">{{ request.created_at|time_since_arabic }}</small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            {% if request.status == 'pending' %}
+                                <span class="badge bg-warning">انتظار</span>
+                            {% elif request.status == 'in_progress' %}
+                                <span class="badge bg-info">تنفيذ</span>
+                            {% elif request.status == 'completed' %}
+                                <span class="badge bg-success">مكتمل</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center py-4">لا توجد طلبات حديثة</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- آخر المقالات -->
+{% if recent_articles %}
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-newspaper text-success me-2"></i>
+                    آخر المقالات المنشورة
+                    <a href="{% url 'dashboard:news' %}" class="btn btn-sm btn-outline-primary float-start">
+                        عرض الكل
+                    </a>
+                </h5>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>العنوان</th>
+                                <th>الكاتب</th>
+                                <th>تاريخ النشر</th>
+                                <th>المشاهدات</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for article in recent_articles %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if article.featured_image %}
+                                                <img src="{{ article.featured_image.url }}" class="me-2 rounded" style="width: 40px; height: 40px; object-fit: cover;" alt="">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ article.title_ar|truncatechars:50 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ article.author.get_full_name|default:article.author.username }}</td>
+                                    <td>{{ article.published_at|date:"d M Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ article.views|default:0 }}</span>
+                                    </td>
+                                    <td>
+                                        {% if article.is_featured %}
+                                            <span class="badge bg-warning">مميز</span>
+                                        {% else %}
+                                            <span class="badge bg-success">منشور</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // رسم بياني للرسائل
+    const ctx = document.getElementById('messagesChart').getContext('2d');
+    const messagesData = {{ messages_chart_data|safe }};
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: messagesData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+            }),
+            datasets: [{
+                label: 'الرسائل',
+                data: messagesData.map(item => item.count),
+                borderColor: '#4A90E2',
+                backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#4A90E2',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+    
+    // تحديث الوقت كل دقيقة
+    setInterval(function() {
+        location.reload();
+    }, 60000);
+</script>
+{% endblock %}

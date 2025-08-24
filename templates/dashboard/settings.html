@@ -1,0 +1,269 @@
+
+# templates/dashboard/settings.html
+{% extends 'dashboard/base.html' %}
+
+{% block title %}إعدادات الموقع{% endblock %}
+{% block page_title %}إعدادات الموقع{% endblock %}
+{% block page_description %}تخصيص إعدادات الموقع العامة{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="row">
+        <!-- معلومات أساسية -->
+        <div class="col-lg-8">
+            <div class="dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        المعلومات الأساسية
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اسم الموقع (عربي) *</label>
+                            <input type="text" class="form-control" name="site_name_ar" 
+                                   value="{{ settings.site_name_ar }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اسم الموقع (إنجليزي)</label>
+                            <input type="text" class="form-control" name="site_name_en" 
+                                   value="{{ settings.site_name_en }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الشعار (عربي)</label>
+                            <input type="text" class="form-control" name="tagline_ar" 
+                                   value="{{ settings.tagline_ar }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الشعار (إنجليزي)</label>
+                            <input type="text" class="form-control" name="tagline_en" 
+                                   value="{{ settings.tagline_en }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">نبذة عن الموقع (عربي)</label>
+                            <textarea class="form-control" name="about_ar" rows="4">{{ settings.about_ar }}</textarea>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">نبذة عن الموقع (إنجليزي)</label>
+                            <textarea class="form-control" name="about_en" rows="4">{{ settings.about_en }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- معلومات التواصل -->
+            <div class="dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-address-book text-success me-2"></i>
+                        معلومات التواصل
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">البريد الإلكتروني *</label>
+                            <input type="email" class="form-control" name="contact_email" 
+                                   value="{{ settings.contact_email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-control" name="contact_phone" 
+                                   value="{{ settings.contact_phone }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">العنوان (عربي)</label>
+                            <textarea class="form-control" name="address_ar" rows="3">{{ settings.address_ar }}</textarea>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">العنوان (إنجليزي)</label>
+                            <textarea class="form-control" name="address_en" rows="3">{{ settings.address_en }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- وسائل التواصل الاجتماعي -->
+            <div class="dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-share-alt text-info me-2"></i>
+                        وسائل التواصل الاجتماعي
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">فيسبوك</label>
+                            <input type="url" class="form-control" name="facebook_url" 
+                                   value="{{ settings.facebook_url }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تويتر</label>
+                            <input type="url" class="form-control" name="twitter_url" 
+                                   value="{{ settings.twitter_url }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">إنستغرام</label>
+                            <input type="url" class="form-control" name="instagram_url" 
+                                   value="{{ settings.instagram_url }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">لينكد إن</label>
+                            <input type="url" class="form-control" name="linkedin_url" 
+                                   value="{{ settings.linkedin_url }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">يوتيوب</label>
+                            <input type="url" class="form-control" name="youtube_url" 
+                                   value="{{ settings.youtube_url }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">واتساب</label>
+                            <input type="text" class="form-control" name="whatsapp_number" 
+                                   value="{{ settings.whatsapp_number }}" placeholder="مثال: 963951901275">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الجانب الأيسر -->
+        <div class="col-lg-4">
+            <!-- الصور -->
+            <div class="dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-images text-warning me-2"></i>
+                        الصور
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">شعار الموقع</label>
+                        {% if settings.logo %}
+                            <div class="mb-2">
+                                <img src="{{ settings.logo.url }}" alt="شعار الموقع" 
+                                     class="img-thumbnail" style="max-height: 100px;">
+                            </div>
+                        {% endif %}
+                        <input type="file" class="form-control" name="logo" accept="image/*">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">أيقونة المتصفح</label>
+                        {% if settings.favicon %}
+                            <div class="mb-2">
+                                <img src="{{ settings.favicon.url }}" alt="أيقونة المتصفح" 
+                                     class="img-thumbnail" style="max-height: 50px;">
+                            </div>
+                        {% endif %}
+                        <input type="file" class="form-control" name="favicon" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- إعدادات SEO -->
+            <div class="dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-search text-primary me-2"></i>
+                        إعدادات SEO
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">وصف الموقع (عربي)</label>
+                        <textarea class="form-control" name="meta_description_ar" rows="3" 
+                                  maxlength="160">{{ settings.meta_description_ar }}</textarea>
+                        <div class="form-text">الحد الأقصى 160 حرف</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">وصف الموقع (إنجليزي)</label>
+                        <textarea class="form-control" name="meta_description_en" rows="3" 
+                                  maxlength="160">{{ settings.meta_description_en }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الكلمات المفتاحية</label>
+                        <textarea class="form-control" name="meta_keywords" rows="3">{{ settings.meta_keywords }}</textarea>
+                        <div class="form-text">افصل الكلمات بفواصل</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">معرف Google Analytics</label>
+                        <input type="text" class="form-control" name="google_analytics_id" 
+                               value="{{ settings.google_analytics_id }}" placeholder="GA-XXXXXXXX">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- أزرار الحفظ -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            آخر تحديث: {{ settings.updated_at|date:"d M Y - H:i" }}
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" onclick="resetForm()">
+                                <i class="fas fa-undo me-1"></i> إعادة تعيين
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> حفظ الإعدادات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function resetForm() {
+        if(confirm('هل أنت متأكد من إعادة تعيين النموذج؟ ستفقد جميع التغييرات غير المحفوظة.')) {
+            location.reload();
+        }
+    }
+    
+    // عد الأحرف في وصف SEO
+    // عد الأحرف في وصف SEO
+    document.querySelectorAll('[name="meta_description_ar"], [name="meta_description_en"]').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const length = this.value.length;
+            const maxLength = 160;
+            const formText = this.nextElementSibling;
+            
+            if (length > maxLength) {
+                formText.textContent = `تجاوز الحد الأقصى! ${length}/${maxLength} حرف`;
+                formText.className = 'form-text text-danger';
+            } else {
+                formText.textContent = `${length}/${maxLength} حرف`;
+                formText.className = 'form-text text-muted';
+            }
+        });
+    });
+</script>
+{% endblock %}

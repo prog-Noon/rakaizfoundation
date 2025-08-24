@@ -1,0 +1,18 @@
+# templates/dashboard/widgets/recent_messages.html
+<div class="widget-box">
+    <h6 class="widget-title">آخر الرسائل</h6>
+    <div class="message-list">
+        {% for message in messages %}
+            <div class="message-item {% if not message.is_read %}unread{% endif %}">
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    <h6>{{ message.name }}</h6>
+                    <p>{{ message.subject|truncatechars:30 }}</p>
+                    <small>{{ message.created_at|time_since_arabic }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

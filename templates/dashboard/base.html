@@ -1,0 +1,247 @@
+
+# templates/dashboard/base.html
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}لوحة التحكم{% endblock %} - {{ site_settings.site_name_ar }}</title>
+    
+    <!-- Bootstrap RTL -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #4A90E2;
+            --primary-maroon: #922B62;
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-maroon));
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.8rem 1.5rem;
+            border-radius: 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-right: 4px solid white;
+        }
+        
+        .main-content {
+            margin-right: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                transition: transform 0.3s;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-right: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="mb-1">{{ site_settings.site_name_ar }}</h4>
+            <p class="mb-0 small opacity-75">لوحة التحكم</p>
+        </div>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                   href="{% url 'dashboard:home' %}">
+                    <i class="fas fa-home me-2"></i>
+                    الرئيسية
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}" 
+                   href="{% url 'dashboard:services' %}">
+                    <i class="fas fa-cogs me-2"></i>
+                    الخدمات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'news' %}active{% endif %}" 
+                   href="{% url 'dashboard:news' %}">
+                    <i class="fas fa-newspaper me-2"></i>
+                    الأخبار
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}" 
+                   href="{% url 'dashboard:messages' %}">
+                    <i class="fas fa-envelope me-2"></i>
+                    الرسائل
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}" 
+                   href="{% url 'dashboard:users' %}">
+                    <i class="fas fa-users me-2"></i>
+                    المستخدمون
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" 
+                   href="{% url 'dashboard:settings' %}">
+                    <i class="fas fa-cog me-2"></i>
+                    الإعدادات
+                </a>
+            </li>
+            
+            <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:home' %}" target="_blank">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    عرض الموقع
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin:index' %}">
+                    <i class="fas fa-database me-2"></i>
+                    Django Admin
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin:logout' %}">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    تسجيل الخروج
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">{% block page_title %}لوحة التحكم{% endblock %}</h1>
+                <p class="text-muted mb-0">{% block page_description %}إدارة المحتوى والإعدادات{% endblock %}</p>
+            </div>
+            <div>
+                <span class="text-muted">مرحباً، {{ user.get_full_name|default:user.username }}</span>
+                <button class="btn btn-outline-secondary d-md-none ms-2" type="button" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+        
+        // إخفاء الساي bar عند النقر خارجها على الجوال
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const toggleBtn = document.querySelector('[onclick="toggleSidebar()"]');
+                
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

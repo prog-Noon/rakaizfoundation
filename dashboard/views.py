@@ -1,264 +1,372 @@
+
 # dashboard/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User
 from django.contrib import messages
-from django.urls import reverse_lazy
-from django.utils.translation import gettext_lazy as _
 from django.db.models import Count, Q
+from django.http import JsonResponse
+from django.core.paginator import Paginator
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
+import json
 
-from core.models import SiteSettings
-from news.models import News, NewsCategory
-from services.models import Service
-from team.models import TeamMember
-from contact.models import ContactMessage, ServiceRequest
+# استيراد النماذج من التطبيقات الأخرى
+from services.models import Service, ServiceRequest
+from news.models import Article
+from contact.models import ContactMessage
+from .models import SiteSettings, UserActivity, DashboardWidget
 
-class SuperuserRequiredMixin(UserPassesTestMixin):
-    """التأكد من أن المستخدم هو مدير عام"""
-    def test_func(self):
-        return self.request.user.is_superuser
+def is_admin_user(user):
+    """التحقق من أن المستخدم مدير"""
+    return user.is_staff or user.is_superuser
 
-class DashboardBaseView(LoginRequiredMixin, SuperuserRequiredMixin):
-    """عرض أساسي للوحة التحكم"""
-    pass
-
-class DashboardHomeView(DashboardBaseView, TemplateView):
+@login_required
+@user_passes_test(is_admin_user)
+def dashboard_home(request):
     """الصفحة الرئيسية للوحة التحكم"""
-    template_name = 'dashboard/home.html'
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    # الإحصائيات العامة
+    total_services = Service.objects.count()
+    total_articles = Article.objects.count()
+    total_messages = ContactMessage.objects.count()
+    total_service_requests = ServiceRequest.objects.count()
+    total_users = User.objects.count()
+    
+    # الإحصائيات الأسبوعية
+    week_ago = timezone.now() - timedelta(days=7)
+    new_messages_week = ContactMessage.objects.filter(created_at__gte=week_ago).count()
+    new_requests_week = ServiceRequest.objects.filter(created_at__gte=week_ago).count()
+    new_articles_week = Article.objects.filter(created_at__gte=week_ago).count()
+    
+    # آخر الرسائل
+    recent_messages = ContactMessage.objects.select_related().order_by('-created_at')[:5]
+    
+    # آخر طلبات الخدمات
+    recent_requests = ServiceRequest.objects.select_related('service').order_by('-created_at')[:5]
+    
+    # آخر المقالات
+    recent_articles = Article.objects.filter(status='published').order_by('-created_at')[:5]
+    
+    # النشاط الحديث
+    recent_activities = UserActivity.objects.select_related('user').order_by('-timestamp')[:10]
+    
+    # إحصائيات الرسائل حسب الحالة
+    messages_stats = ContactMessage.objects.aggregate(
+        total=Count('id'),
+        unread=Count('id', filter=Q(is_read=False)),
+        read=Count('id', filter=Q(is_read=True)),
+    )
+    
+    # إحصائيات طلبات الخدمات حسب الحالة
+    requests_stats = ServiceRequest.objects.aggregate(
+        total=Count('id'),
+        pending=Count('id', filter=Q(status='pending')),
+        in_progress=Count('id', filter=Q(status='in_progress')),
+        completed=Count('id', filter=Q(status='completed')),
+        cancelled=Count('id', filter=Q(status='cancelled')),
+    )
+    
+    # بيانات الرسم البياني للرسائل (آخر 7 أيام)
+    messages_chart_data = []
+    for i in range(7):
+        date = timezone.now().date() - timedelta(days=i)
+        count = ContactMessage.objects.filter(created_at__date=date).count()
+        messages_chart_data.append({
+            'date': date.strftime('%Y-%m-%d'),
+            'count': count
+        })
+    messages_chart_data.reverse()
+    
+    context = {
+        'total_services': total_services,
+        'total_articles': total_articles,
+        'total_messages': total_messages,
+        'total_service_requests': total_service_requests,
+        'total_users': total_users,
+        'new_messages_week': new_messages_week,
+        'new_requests_week': new_requests_week,
+        'new_articles_week': new_articles_week,
+        'recent_messages': recent_messages,
+        'recent_requests': recent_requests,
+        'recent_articles': recent_articles,
+        'recent_activities': recent_activities,
+        'messages_stats': messages_stats,
+        'requests_stats': requests_stats,
+        'messages_chart_data': json.dumps(messages_chart_data),
+        'current_time': timezone.now(),
+    }
+    
+    return render(request, 'dashboard/home.html', context)
+
+@login_required
+@user_passes_test(is_admin_user)
+def services_dashboard(request):
+    """لوحة تحكم الخدمات"""
+    services = Service.objects.all().order_by('-created_at')
+    
+    # البحث
+    search_query = request.GET.get('search', '')
+    if search_query:
+        services = services.filter(
+            Q(title_ar__icontains=search_query) |
+            Q(title_en__icontains=search_query) |
+            Q(description_ar__icontains=search_query)
+        )
+    
+    # التصفية حسب الحالة
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        services = services.filter(is_active=(status_filter == 'active'))
+    
+    # الترقيم
+    paginator = Paginator(services, 10)
+    page_number = request.GET.get('page')
+    services_page = paginator.get_page(page_number)
+    
+    # إحصائيات الخدمات
+    services_stats = {
+        'total': Service.objects.count(),
+        'active': Service.objects.filter(is_active=True).count(),
+        'inactive': Service.objects.filter(is_active=False).count(),
+        'with_image': Service.objects.exclude(image='').count(),
+    }
+    
+    context = {
+        'services': services_page,
+        'services_stats': services_stats,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'dashboard/services.html', context)
+
+@login_required
+@user_passes_test(is_admin_user)
+def news_dashboard(request):
+    """لوحة تحكم الأخبار"""
+    articles = Article.objects.all().order_by('-created_at')
+    
+    # البحث
+    search_query = request.GET.get('search', '')
+    if search_query:
+        articles = articles.filter(
+            Q(title_ar__icontains=search_query) |
+            Q(title_en__icontains=search_query) |
+            Q(content_ar__icontains=search_query)
+        )
+    
+    # التصفية حسب الحالة
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        articles = articles.filter(status=status_filter)
+    
+    # الترقيم
+    paginator = Paginator(articles, 10)
+    page_number = request.GET.get('page')
+    articles_page = paginator.get_page(page_number)
+    
+    # إحصائيات المقالات
+    articles_stats = {
+        'total': Article.objects.count(),
+        'published': Article.objects.filter(status='published').count(),
+        'draft': Article.objects.filter(status='draft').count(),
+        'archived': Article.objects.filter(status='archived').count(),
+        'featured': Article.objects.filter(is_featured=True).count(),
+    }
+    
+    context = {
+        'articles': articles_page,
+        'articles_stats': articles_stats,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'dashboard/news.html', context)
+
+@login_required
+@user_passes_test(is_admin_user)
+def messages_dashboard(request):
+    """لوحة تحكم الرسائل"""
+    messages_list = ContactMessage.objects.all().order_by('-created_at')
+    
+    # التصفية حسب الحالة
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'unread':
+        messages_list = messages_list.filter(is_read=False)
+    elif status_filter == 'read':
+        messages_list = messages_list.filter(is_read=True)
+    
+    # البحث
+    search_query = request.GET.get('search', '')
+    if search_query:
+        messages_list = messages_list.filter(
+            Q(name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(subject__icontains=search_query) |
+            Q(message__icontains=search_query)
+        )
+    
+    # الترقيم
+    paginator = Paginator(messages_list, 15)
+    page_number = request.GET.get('page')
+    messages_page = paginator.get_page(page_number)
+    
+    context = {
+        'messages': messages_page,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'dashboard/messages.html', context)
+
+@login_required
+@user_passes_test(is_admin_user)
+def settings_dashboard(request):
+    """إعدادات الموقع"""
+    settings_obj = SiteSettings.get_settings()
+    
+    if request.method == 'POST':
+        # تحديث الإعدادات
+        settings_obj.site_name_ar = request.POST.get('site_name_ar', '')
+        settings_obj.site_name_en = request.POST.get('site_name_en', '')
+        settings_obj.tagline_ar = request.POST.get('tagline_ar', '')
+        settings_obj.tagline_en = request.POST.get('tagline_en', '')
+        settings_obj.about_ar = request.POST.get('about_ar', '')
+        settings_obj.about_en = request.POST.get('about_en', '')
+        settings_obj.contact_email = request.POST.get('contact_email', '')
+        settings_obj.contact_phone = request.POST.get('contact_phone', '')
+        settings_obj.address_ar = request.POST.get('address_ar', '')
+        settings_obj.address_en = request.POST.get('address_en', '')
         
-        # إحصائيات عامة
-        context['stats'] = {
-            'total_news': News.objects.count(),
-            'total_services': Service.objects.count(),
-            'total_team_members': TeamMember.objects.count(),
-            'unread_messages': ContactMessage.objects.filter(is_read=False).count(),
-            'pending_requests': ServiceRequest.objects.filter(status='pending').count(),
-        }
+        # وسائل التواصل
+        settings_obj.facebook_url = request.POST.get('facebook_url', '')
+        settings_obj.twitter_url = request.POST.get('twitter_url', '')
+        settings_obj.instagram_url = request.POST.get('instagram_url', '')
+        settings_obj.linkedin_url = request.POST.get('linkedin_url', '')
+        settings_obj.youtube_url = request.POST.get('youtube_url', '')
+        settings_obj.whatsapp_number = request.POST.get('whatsapp_number', '')
         
-        # الأخبار الأخيرة
-        context['recent_news'] = News.objects.order_by('-created_at')[:5]
+        # إعدادات SEO
+        settings_obj.meta_description_ar = request.POST.get('meta_description_ar', '')
+        settings_obj.meta_description_en = request.POST.get('meta_description_en', '')
+        settings_obj.meta_keywords = request.POST.get('meta_keywords', '')
+        settings_obj.google_analytics_id = request.POST.get('google_analytics_id', '')
         
-        # الرسائل الجديدة
-        context['recent_messages'] = ContactMessage.objects.filter(is_read=False).order_by('-created_at')[:5]
+        # رفع الملفات
+        if 'logo' in request.FILES:
+            settings_obj.logo = request.FILES['logo']
+        if 'favicon' in request.FILES:
+            settings_obj.favicon = request.FILES['favicon']
         
-        # طلبات الخدمات الجديدة
-        context['recent_requests'] = ServiceRequest.objects.filter(status='pending').order_by('-created_at')[:5]
+        settings_obj.save()
+        messages.success(request, 'تم حفظ الإعدادات بنجاح!')
+        return redirect('dashboard:settings')
+    
+    context = {
+        'settings': settings_obj,
+    }
+    
+    return render(request, 'dashboard/settings.html', context)
+
+@login_required
+@user_passes_test(is_admin_user)
+def users_dashboard(request):
+    """إدارة المستخدمين"""
+    users = User.objects.all().order_by('-date_joined')
+    
+    # البحث
+    search_query = request.GET.get('search', '')
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    
+    # التصفية
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'active':
+        users = users.filter(is_active=True)
+    elif status_filter == 'inactive':
+        users = users.filter(is_active=False)
+    elif status_filter == 'staff':
+        users = users.filter(is_staff=True)
+    
+    # الترقيم
+    paginator = Paginator(users, 15)
+    page_number = request.GET.get('page')
+    users_page = paginator.get_page(page_number)
+    
+    # إحصائيات المستخدمين
+    users_stats = {
+        'total': User.objects.count(),
+        'active': User.objects.filter(is_active=True).count(),
+        'staff': User.objects.filter(is_staff=True).count(),
+        'superusers': User.objects.filter(is_superuser=True).count(),
+    }
+    
+    context = {
+        'users': users_page,
+        'users_stats': users_stats,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'dashboard/users.html', context)
+
+# API Views للرسوم البيانية والإحصائيات
+@login_required
+@user_passes_test(is_admin_user)
+def stats_api(request):
+    """API للإحصائيات والرسوم البيانية"""
+    chart_type = request.GET.get('type', 'messages')
+    
+    if chart_type == 'messages':
+        # رسم بياني للرسائل لآخر 30 يوم
+        data = []
+        for i in range(30):
+            date = timezone.now().date() - timedelta(days=i)
+            count = ContactMessage.objects.filter(created_at__date=date).count()
+            data.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'count': count
+            })
+        data.reverse()
         
-        return context
+    elif chart_type == 'services':
+        # إحصائيات الخدمات
+        data = list(Service.objects.values('category').annotate(count=Count('id')))
+        
+    elif chart_type == 'users':
+        # نمو المستخدمين لآخر 12 شهر
+        data = []
+        for i in range(12):
+            date = timezone.now().replace(day=1) - timedelta(days=30*i)
+            count = User.objects.filter(date_joined__month=date.month, date_joined__year=date.year).count()
+            data.append({
+                'month': date.strftime('%Y-%m'),
+                'count': count
+            })
+        data.reverse()
+    
+    else:
+        data = []
+    
+    return JsonResponse({'data': data})
 
-class SettingsView(DashboardBaseView, TemplateView):
-    """إدارة إعدادات الموقع"""
-    template_name = 'dashboard/settings.html'
+def log_user_activity(user, action, model_name=None, object_id=None, request=None):
+    """تسجيل نشاط المستخدم"""
+    ip_address = None
+    if request:
+        ip_address = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        try:
-            context['settings'] = SiteSettings.objects.first()
-        except SiteSettings.DoesNotExist:
-            context['settings'] = SiteSettings.objects.create()
-        return context
-
-# إدارة الأخبار
-class NewsManagementView(DashboardBaseView, ListView):
-    """قائمة الأخبار"""
-    model = News
-    template_name = 'dashboard/news/list.html'
-    context_object_name = 'news_list'
-    paginate_by = 20
-    
-    def get_queryset(self):
-        queryset = News.objects.all().order_by('-created_at')
-        search = self.request.GET.get('search')
-        if search:
-            queryset = queryset.filter(
-                Q(title_ar__icontains=search) | Q(title_en__icontains=search)
-            )
-        return queryset
-
-class NewsCreateView(DashboardBaseView, CreateView):
-    """إضافة خبر جديد"""
-    model = News
-    template_name = 'dashboard/news/form.html'
-    fields = ['title_ar', 'title_en', 'title_tr', 'content_ar', 'content_en', 'content_tr', 
-              'excerpt_ar', 'excerpt_en', 'excerpt_tr', 'featured_image', 'category', 
-              'is_published', 'is_featured']
-    success_url = reverse_lazy('dashboard:news_list')
-    
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        messages.success(self.request, _('تم إنشاء الخبر بنجاح'))
-        return super().form_valid(form)
-
-class NewsUpdateView(DashboardBaseView, UpdateView):
-    """تعديل خبر"""
-    model = News
-    template_name = 'dashboard/news/form.html'
-    fields = ['title_ar', 'title_en', 'title_tr', 'content_ar', 'content_en', 'content_tr', 
-              'excerpt_ar', 'excerpt_en', 'excerpt_tr', 'featured_image', 'category', 
-              'is_published', 'is_featured']
-    success_url = reverse_lazy('dashboard:news_list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, _('تم تحديث الخبر بنجاح'))
-        return super().form_valid(form)
-
-class NewsDeleteView(DashboardBaseView, DeleteView):
-    """حذف خبر"""
-    model = News
-    success_url = reverse_lazy('dashboard:news_list')
-    
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, _('تم حذف الخبر بنجاح'))
-        return super().delete(request, *args, **kwargs)
-
-# إدارة الخدمات
-class ServiceManagementView(DashboardBaseView, ListView):
-    """قائمة الخدمات"""
-    model = Service
-    template_name = 'dashboard/services/list.html'
-    context_object_name = 'services'
-    
-    def get_queryset(self):
-        return Service.objects.all().order_by('order')
-
-class ServiceCreateView(DashboardBaseView, CreateView):
-    """إضافة خدمة جديدة"""
-    model = Service
-    template_name = 'dashboard/services/form.html'
-    fields = ['title_ar', 'title_en', 'title_tr', 'description_ar', 'description_en', 
-              'description_tr', 'image', 'icon', 'is_active', 'order']
-    success_url = reverse_lazy('dashboard:service_list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, _('تم إنشاء الخدمة بنجاح'))
-        return super().form_valid(form)
-
-class ServiceUpdateView(DashboardBaseView, UpdateView):
-    """تعديل خدمة"""
-    model = Service
-    template_name = 'dashboard/services/form.html'
-    fields = ['title_ar', 'title_en', 'title_tr', 'description_ar', 'description_en', 
-              'description_tr', 'image', 'icon', 'is_active', 'order']
-    success_url = reverse_lazy('dashboard:service_list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, _('تم تحديث الخدمة بنجاح'))
-        return super().form_valid(form)
-
-class ServiceDeleteView(DashboardBaseView, DeleteView):
-    """حذف خدمة"""
-    model = Service
-    success_url = reverse_lazy('dashboard:service_list')
-    
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, _('تم حذف الخدمة بنجاح'))
-        return super().delete(request, *args, **kwargs)
-
-# إدارة الفريق
-class TeamManagementView(DashboardBaseView, ListView):
-    """قائمة أعضاء الفريق"""
-    model = TeamMember
-    template_name = 'dashboard/team/list.html'
-    context_object_name = 'team_members'
-    
-    def get_queryset(self):
-        return TeamMember.objects.all().order_by('order')
-
-class TeamCreateView(DashboardBaseView, CreateView):
-    """إضافة عضو فريق جديد"""
-    model = TeamMember
-    template_name = 'dashboard/team/form.html'
-    fields = ['name_ar', 'name_en', 'name_tr', 'position_ar', 'position_en', 'position_tr',
-              'bio_ar', 'bio_en', 'bio_tr', 'photo', 'email', 'phone', 'facebook', 'linkedin',
-              'is_active', 'order']
-    success_url = reverse_lazy('dashboard:team_list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, _('تم إضافة عضو الفريق بنجاح'))
-        return super().form_valid(form)
-
-class TeamUpdateView(DashboardBaseView, UpdateView):
-    """تعديل عضو فريق"""
-    model = TeamMember
-    template_name = 'dashboard/team/form.html'
-    fields = ['name_ar', 'name_en', 'name_tr', 'position_ar', 'position_en', 'position_tr',
-              'bio_ar', 'bio_en', 'bio_tr', 'photo', 'email', 'phone', 'facebook', 'linkedin',
-              'is_active', 'order']
-    success_url = reverse_lazy('dashboard:team_list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, _('تم تحديث بيانات عضو الفريق بنجاح'))
-        return super().form_valid(form)
-
-class TeamDeleteView(DashboardBaseView, DeleteView):
-    """حذف عضو فريق"""
-    model = TeamMember
-    success_url = reverse_lazy('dashboard:team_list')
-    
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, _('تم حذف عضو الفريق بنجاح'))
-        return super().delete(request, *args, **kwargs)
-
-# إدارة الرسائل
-class MessagesView(DashboardBaseView, ListView):
-    """قائمة رسائل التواصل"""
-    model = ContactMessage
-    template_name = 'dashboard/messages/list.html'
-    context_object_name = 'messages'
-    paginate_by = 20
-    
-    def get_queryset(self):
-        return ContactMessage.objects.all().order_by('-created_at')
-
-class MessageDetailView(DashboardBaseView, TemplateView):
-    """تفاصيل رسالة التواصل"""
-    template_name = 'dashboard/messages/detail.html'
-    
-    def get_object(self):
-        obj = get_object_or_404(ContactMessage, pk=self.kwargs['pk'])
-        if not obj.is_read:
-            obj.is_read = True
-            obj.save()
-        return obj
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['message'] = self.get_object()
-        return context
-
-class ServiceRequestsView(DashboardBaseView, ListView):
-    """قائمة طلبات الخدمات"""
-    model = ServiceRequest
-    template_name = 'dashboard/requests/list.html'
-    context_object_name = 'requests'
-    paginate_by = 20
-    
-    def get_queryset(self):
-        return ServiceRequest.objects.all().order_by('-created_at')
-
-class ServiceRequestDetailView(DashboardBaseView, TemplateView):
-    """تفاصيل طلب الخدمة"""
-    template_name = 'dashboard/requests/detail.html'
-    
-    def get_object(self):
-        return get_object_or_404(ServiceRequest, pk=self.kwargs['pk'])
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['request'] = self.get_object()
-        return context
-    
-    def post(self, request, *args, **kwargs):
-        """تحديث حالة الطلب"""
-        obj = self.get_object()
-        new_status = request.POST.get('status')
-        if new_status in dict(ServiceRequest.STATUS_CHOICES):
-            obj.status = new_status
-            obj.save()
-            messages.success(request, _('تم تحديث حالة الطلب بنجاح'))
-        return redirect('dashboard:service_request_detail', pk=obj.pk)
+    UserActivity.objects.create(
+        user=user,
+        action=action,
+        model_name=model_name,
+        object_id=object_id,
+        ip_address=ip_address
+    )

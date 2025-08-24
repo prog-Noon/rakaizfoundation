@@ -1,0 +1,431 @@
+# templates/dashboard/services.html
+{% extends 'dashboard/base.html' %}
+
+{% block title %}إدارة الخدمات{% endblock %}
+{% block page_title %}إدارة الخدمات{% endblock %}
+{% block page_description %}عرض وإدارة جميع الخدمات المتاحة{% endblock %}
+
+{% block content %}
+<!-- إحصائيات الخدمات -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="dashboard-card">
+            <div class="card-body text-center">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-cogs fa-2x"></i>
+                </div>
+                <h4 class="mb-1">{{ services_stats.total }}</h4>
+                <p class="text-muted mb-0">إجمالي الخدمات</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="dashboard-card">
+            <div class="card-body text-center">
+                <div class="text-success mb-2">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <h4 class="mb-1">{{ services_stats.active }}</h4>
+                <p class="text-muted mb-0">نشطة</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="dashboard-card">
+            <div class="card-body text-center">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-pause-circle fa-2x"></i>
+                </div>
+                <h4 class="mb-1">{{ services_stats.inactive }}</h4>
+                <p class="text-muted mb-0">غير نشطة</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="dashboard-card">
+            <div class="card-body text-center">
+                <div class="text-info mb-2">
+                    <i class="fas fa-image fa-2x"></i>
+                </div>
+                <h4 class="mb-1">{{ services_stats.with_image }}</h4>
+                <p class="text-muted mb-0">بها صور</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- أدوات البحث والتصفية -->
+<div class="dashboard-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="البحث في الخدمات..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="status">
+                    <option value="">جميع الحالات</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>نشطة</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>غير نشطة</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i> بحث
+                </button>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'admin:services_service_add' %}" class="btn btn-success w-100">
+                    <i class="fas fa-plus me-1"></i> إضافة خدمة
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول الخدمات -->
+<div class="dashboard-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>الخدمة</th>
+                        <th>الفئة</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if service.image %}
+                                        <img src="{{ service.image.url }}" class="me-3 rounded" 
+                                             style="width: 50px; height: 50px; object-fit: cover;" alt="">
+                                    {% else %}
+                                        <div class="me-3 bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-cog text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ service.title_ar }}</h6>
+                                        <small class="text-muted">{{ service.description_ar|truncatechars:50 }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ service.category|default:"عام" }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if service.is_active %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        نشطة
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>
+                                        غير نشطة
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-bold">{{ service.created_at|date:"d M Y" }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ service.created_at|time:"H:i" }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'admin:services_service_change' service.id %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="تحرير">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'services:detail' service.id %}" 
+                                       class="btn btn-sm btn-outline-info" 
+                                       target="_blank" 
+                                       title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-warning" 
+                                            onclick="toggleServiceStatus({{ service.id }})"
+                                            title="تغيير الحالة">
+                                        {% if service.is_active %}
+                                            <i class="fas fa-pause"></i>
+                                        {% else %}
+                                            <i class="fas fa-play"></i>
+                                        {% endif %}
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteService({{ service.id }})"
+                                            title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-inbox fa-4x mb-3 opacity-50"></i>
+                                    <h5>لا توجد خدمات</h5>
+                                    <p class="mb-3">لم يتم العثور على أي خدمات تطابق معايير البحث</p>
+                                    <a href="{% url 'admin:services_service_add' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i>
+                                        إضافة خدمة جديدة
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- التنقل بين الصفحات -->
+        {% if services.has_other_pages %}
+            <nav aria-label="تنقل الصفحات" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if services.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ services.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                                السابق
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in services.paginator.page_range %}
+                        {% if num == services.number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > services.number|add:'-3' and num < services.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if services.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ services.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                التالي
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ services.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- معلومات الصفحات -->
+                <div class="text-center text-muted mt-3">
+                    <small>
+                        عرض {{ services.start_index }} إلى {{ services.end_index }} من أصل {{ services.paginator.count }} خدمة
+                    </small>
+                </div>
+            </nav>
+        {% endif %}
+        
+        <!-- ملخص النتائج -->
+        <div class="row mt-4 pt-3 border-top">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle text-info me-2"></i>
+                    <span class="text-muted">
+                        إجمالي الخدمات: <strong>{{ services_stats.total }}</strong>
+                        {% if search_query or status_filter %}
+                            ({{ services.paginator.count }} نتيجة بحث)
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportServices()">
+                        <i class="fas fa-download me-1"></i>
+                        تصدير
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="importServices()">
+                        <i class="fas fa-upload me-1"></i>
+                        استيراد
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="bulkActions()">
+                        <i class="fas fa-tasks me-1"></i>
+                        إجراءات متعددة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تغيير حالة الخدمة
+    function toggleServiceStatus(serviceId) {
+        if(confirm('هل تريد تغيير حالة هذه الخدمة؟')) {
+            // AJAX call لتغيير الحالة
+            fetch(`/dashboard/api/services/${serviceId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('حدث خطأ في تغيير حالة الخدمة');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ غير متوقع');
+            });
+        }
+    }
+    
+    // حذف خدمة
+    function deleteService(serviceId) {
+        if(confirm('هل أنت متأكد من حذف هذه الخدمة؟ لا يمكن التراجع عن هذا الإجراء!')) {
+            // إعادة توجيه لصفحة الحذف في Django Admin
+            window.location.href = `/admin/services/service/${serviceId}/delete/`;
+        }
+    }
+    
+    // تصدير الخدمات
+    function exportServices() {
+        const searchParams = new URLSearchParams(window.location.search);
+        const exportUrl = `/dashboard/api/services/export/?${searchParams.toString()}`;
+        window.open(exportUrl, '_blank');
+    }
+    
+    // استيراد خدمات
+    function importServices() {
+        alert('ميزة الاستيراد ستكون متاحة قريباً');
+    }
+    
+    // الإجراءات المتعددة
+    function bulkActions() {
+        alert('ميزة الإجراءات المتعددة ستكون متاحة قريباً');
+    }
+    
+    // تحديث فوري للبحث (اختياري)
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="search"]');
+        const statusSelect = document.querySelector('select[name="status"]');
+        
+        // إضافة تأخير للبحث التلقائي
+        let searchTimeout;
+        searchInput?.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 3 || this.value.length === 0) {
+                    // تشغيل البحث تلقائياً
+                    // this.closest('form').submit();
+                }
+            }, 500);
+        });
+        
+        // تغيير فوري عند تغيير الحالة
+        statusSelect?.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+    
+    // تحسين تجربة المستخدم
+    document.querySelectorAll('.btn-group .btn').forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // إضافة تأكيد لإجراءات حساسة
+    document.querySelectorAll('.btn-outline-danger').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!this.onclick && !confirm('هل أنت متأكد من هذا الإجراء؟')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+<!-- CSS إضافي -->
+<style>
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .btn-group .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .pagination .page-link {
+        border-radius: 0.375rem;
+        margin: 0 2px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(74, 144, 226, 0.05);
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn-group .btn {
+            margin-bottom: 2px;
+            border-radius: 0.375rem !important;
+        }
+        
+        .table-responsive {
+            font-size: 0.9em;
+        }
+    }
+</style>
+{% endblock %}

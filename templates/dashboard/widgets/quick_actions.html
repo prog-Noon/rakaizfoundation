@@ -1,0 +1,23 @@
+
+# templates/dashboard/widgets/quick_actions.html
+<div class="widget-box">
+    <h6 class="widget-title">إجراءات سريعة</h6>
+    <div class="quick-actions">
+        <a href="{% url 'admin:services_service_add' %}" class="quick-action-btn">
+            <i class="fas fa-plus"></i>
+            <span>إضافة خدمة</span>
+        </a>
+        <a href="{% url 'admin:news_article_add' %}" class="quick-action-btn">
+            <i class="fas fa-newspaper"></i>
+            <span>مقال جديد</span>
+        </a>
+        <a href="{% url 'dashboard:messages' %}" class="quick-action-btn">
+            <i class="fas fa-envelope"></i>
+            <span>الرسائل</span>
+        </a>
+        <a href="{% url 'dashboard:settings' %}" class="quick-action-btn">
+            <i class="fas fa-cog"></i>
+            <span>الإعدادات</span>
+        </a>
+    </div>
+</div>
