@@ -12,5 +12,7 @@ urlpatterns = [
     path('users/', views.users_dashboard, name='users'),
     path('settings/', views.settings_dashboard, name='settings'),
     path('api/stats/', views.stats_api, name='stats_api'),
+    path('services/delete/<int:pk>/', views.delete_service, name='delete_service'),
+    path('news/delete/<int:pk>/', views.delete_news, name='delete_news'),
 ]
 

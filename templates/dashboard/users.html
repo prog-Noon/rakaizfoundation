@@ -1,0 +1,144 @@
+<!-- dashboard/templates/dashboard/users.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}إدارة المستخدمين - لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="content-header d-flex justify-content-between align-items-center">
+    <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="fas fa-plus"></i> إضافة مستخدم جديد
+    </button>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="ms-3">
+                    <h3>{{ users_stats.total }}</h3>
+                    <p class="text-muted mb-0">إجمالي المستخدمين</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="ms-3">
+                    <h3>{{ users_stats.active }}</h3>
+                    <p class="text-muted mb-0">نشط</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="ms-3">
+                    <h3>{{ users_stats.staff }}</h3>
+                    <p class="text-muted mb-0">موظفين</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <div class="ms-3">
+                    <h3>{{ users_stats.superusers }}</h3>
+                    <p class="text-muted mb-0">مدراء</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="table-container">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="get" class="d-flex">
+                <input type="text" name="search" class="form-control me-2" 
+                       placeholder="البحث عن مستخدم..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الاسم الكامل</th>
+                    <th>الصلاحيات</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الانضمام</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email|default:"-" }}</td>
+                    <td>{{ user.get_full_name|default:"-" }}</td>
+                    <td>
+                        {% if user.is_superuser %}
+                            <span class="badge bg-danger">مدير</span>
+                        {% elif user.is_staff %}
+                            <span class="badge bg-warning">موظف</span>
+                        {% else %}
+                            <span class="badge bg-secondary">مستخدم</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                        {% else %}
+                            <span class="badge bg-danger">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <p class="text-muted">لا يوجد مستخدمين</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,4 +1,3 @@
-
 # dashboard/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -13,9 +12,9 @@ from datetime import timedelta, datetime
 import json
 
 # استيراد النماذج من التطبيقات الأخرى
-from services.models import Service, ServiceRequest
-from news.models import Article
-from contact.models import ContactMessage
+from services.models import Service  # Service only from services
+from contact.models import ContactMessage, ServiceRequest  # ServiceRequest from contact
+from news.models import News  # Changed from Article to News
 from .models import SiteSettings, UserActivity, DashboardWidget
 
 def is_admin_user(user):
@@ -29,7 +28,7 @@ def dashboard_home(request):
     
     # الإحصائيات العامة
     total_services = Service.objects.count()
-    total_articles = Article.objects.count()
+    total_articles = News.objects.count()  # Changed from Article to News
     total_messages = ContactMessage.objects.count()
     total_service_requests = ServiceRequest.objects.count()
     total_users = User.objects.count()
@@ -38,7 +37,7 @@ def dashboard_home(request):
     week_ago = timezone.now() - timedelta(days=7)
     new_messages_week = ContactMessage.objects.filter(created_at__gte=week_ago).count()
     new_requests_week = ServiceRequest.objects.filter(created_at__gte=week_ago).count()
-    new_articles_week = Article.objects.filter(created_at__gte=week_ago).count()
+    new_articles_week = News.objects.filter(created_at__gte=week_ago).count()  # Changed from Article to News
     
     # آخر الرسائل
     recent_messages = ContactMessage.objects.select_related().order_by('-created_at')[:5]
@@ -47,7 +46,7 @@ def dashboard_home(request):
     recent_requests = ServiceRequest.objects.select_related('service').order_by('-created_at')[:5]
     
     # آخر المقالات
-    recent_articles = Article.objects.filter(status='published').order_by('-created_at')[:5]
+    recent_articles = News.objects.filter(is_published=True).order_by('-created_at')[:5]  # Changed status='published' to is_published=True
     
     # النشاط الحديث
     recent_activities = UserActivity.objects.select_related('user').order_by('-timestamp')[:10]
@@ -104,6 +103,36 @@ def dashboard_home(request):
 @user_passes_test(is_admin_user)
 def services_dashboard(request):
     """لوحة تحكم الخدمات"""
+    
+    # معالجة إضافة خدمة جديدة
+    if request.method == 'POST':
+        try:
+            service = Service()
+            service.title_ar = request.POST.get('title_ar', '')
+            service.title_en = request.POST.get('title_en', '')
+            service.title_tr = request.POST.get('title_tr', '')
+            
+            service.description_ar = request.POST.get('description_ar', '')
+            service.description_en = request.POST.get('description_en', '')
+            service.description_tr = request.POST.get('description_tr', '')
+            
+            # معالجة الصورة
+            if 'image' in request.FILES:
+                service.image = request.FILES['image']
+            
+            service.icon = request.POST.get('icon', '')
+            service.is_active = 'is_active' in request.POST
+            service.is_featured = 'is_featured' in request.POST
+            
+            service.save()
+            
+            messages.success(request, 'تم إضافة الخدمة بنجاح!')
+            return redirect('dashboard:services')
+            
+        except Exception as e:
+            messages.error(request, f'حدث خطأ أثناء إضافة الخدمة: {str(e)}')
+    
+    # عرض قائمة الخدمات
     services = Service.objects.all().order_by('-created_at')
     
     # البحث
@@ -146,7 +175,46 @@ def services_dashboard(request):
 @user_passes_test(is_admin_user)
 def news_dashboard(request):
     """لوحة تحكم الأخبار"""
-    articles = Article.objects.all().order_by('-created_at')
+    
+    # معالجة إضافة خبر جديد
+    if request.method == 'POST':
+        try:
+            # إنشاء خبر جديد
+            news = News()
+            news.title_ar = request.POST.get('title_ar', '')
+            news.title_en = request.POST.get('title_en', '')
+            news.title_tr = request.POST.get('title_tr', '')  # إضافة التركي إذا لزم
+            
+            news.content_ar = request.POST.get('content_ar', '')
+            news.content_en = request.POST.get('content_en', '')
+            news.content_tr = request.POST.get('content_tr', '')
+            
+            news.excerpt_ar = request.POST.get('excerpt_ar', '')[:300] if request.POST.get('excerpt_ar') else request.POST.get('content_ar', '')[:300]
+            news.excerpt_en = request.POST.get('excerpt_en', '')[:300] if request.POST.get('excerpt_en') else request.POST.get('content_en', '')[:300]
+            news.excerpt_tr = request.POST.get('excerpt_tr', '')[:300] if request.POST.get('excerpt_tr') else request.POST.get('content_tr', '')[:300]
+            
+            # معالجة الصورة
+            if 'featured_image' in request.FILES:
+                news.featured_image = request.FILES['featured_image']
+            
+            # تعيين الكاتب
+            news.author = request.user
+            
+            # الحالة
+            news.is_published = 'is_published' in request.POST
+            news.is_featured = 'is_featured' in request.POST
+            
+            # حفظ الخبر
+            news.save()
+            
+            messages.success(request, 'تم إضافة الخبر بنجاح!')
+            return redirect('dashboard:news')
+            
+        except Exception as e:
+            messages.error(request, f'حدث خطأ أثناء إضافة الخبر: {str(e)}')
+    
+    # عرض قائمة الأخبار
+    articles = News.objects.all().order_by('-created_at')
     
     # البحث
     search_query = request.GET.get('search', '')
@@ -159,8 +227,10 @@ def news_dashboard(request):
     
     # التصفية حسب الحالة
     status_filter = request.GET.get('status', '')
-    if status_filter:
-        articles = articles.filter(status=status_filter)
+    if status_filter == 'published':
+        articles = articles.filter(is_published=True)
+    elif status_filter == 'unpublished':
+        articles = articles.filter(is_published=False)
     
     # الترقيم
     paginator = Paginator(articles, 10)
@@ -169,11 +239,10 @@ def news_dashboard(request):
     
     # إحصائيات المقالات
     articles_stats = {
-        'total': Article.objects.count(),
-        'published': Article.objects.filter(status='published').count(),
-        'draft': Article.objects.filter(status='draft').count(),
-        'archived': Article.objects.filter(status='archived').count(),
-        'featured': Article.objects.filter(is_featured=True).count(),
+        'total': News.objects.count(),
+        'published': News.objects.filter(is_published=True).count(),
+        'unpublished': News.objects.filter(is_published=False).count(),
+        'featured': News.objects.filter(is_featured=True).count(),
     }
     
     context = {
@@ -356,6 +425,34 @@ def stats_api(request):
         data = []
     
     return JsonResponse({'data': data})
+
+@login_required
+@user_passes_test(is_admin_user)
+def delete_news(request, pk):
+    """حذف خبر"""
+    if request.method == 'POST':
+        try:
+            news = get_object_or_404(News, pk=pk)
+            news.delete()
+            messages.success(request, 'تم حذف الخبر بنجاح!')
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+@user_passes_test(is_admin_user)
+def delete_service(request, pk):
+    """حذف خدمة"""
+    if request.method == 'POST':
+        try:
+            service = get_object_or_404(Service, pk=pk)
+            service.delete()
+            messages.success(request, 'تم حذف الخدمة بنجاح!')
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def log_user_activity(user, action, model_name=None, object_id=None, request=None):
     """تسجيل نشاط المستخدم"""

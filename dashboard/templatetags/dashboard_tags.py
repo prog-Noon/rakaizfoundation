@@ -1,9 +1,9 @@
 # dashboard/templatetags/dashboard_tags.py
 from django import template
 from django.contrib.auth.models import User
-from services.models import Service, ServiceRequest
-from news.models import Article
-from contact.models import ContactMessage
+from services.models import Service  # Service only from services
+from contact.models import ContactMessage, ServiceRequest  # ServiceRequest from contact
+from news.models import News  # Changed from Article to News
 from django.utils import timezone
 from datetime import timedelta
 
@@ -14,7 +14,7 @@ def stats_widget():
     """عنصر الإحصائيات"""
     stats = {
         'total_services': Service.objects.count(),
-        'total_articles': Article.objects.count(),
+        'total_articles': News.objects.count(),  # Changed from Article to News
         'total_messages': ContactMessage.objects.count(),
         'total_users': User.objects.count(),
     }
