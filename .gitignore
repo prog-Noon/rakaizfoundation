@@ -1,10 +1,48 @@
-*.pyc
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
 __pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Django
+*.log
 db.sqlite3
+db.sqlite3-journal
 /staticfiles/
 /media/
-/.env
-venv/
-.env*
-*.log
-env/
+/logs/
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.tmp
+
+# CKEditor uploads (قد ترغب في الاحتفاظ بها)
+# media/uploads/
+
+# Collected static files
+staticfiles/
+static_collected/

@@ -125,6 +125,104 @@
             transform: translateY(-2px);
         }
 
+        /* Language Switcher Styles */
+        .language-switcher {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .language-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(118, 75, 162, 0.3);
+        }
+
+        .language-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+
+        .language-btn i {
+            font-size: 1rem;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            padding: 0.5rem;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .language-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .language-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            transform: rotate(45deg);
+            transform-origin: center;
+        }
+
+        .language-option {
+            display: block;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background: none;
+            border: none;
+            text-align: right;
+            color: #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .language-option:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transform: translateX(-5px);
+        }
+
+        .language-option.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .language-option.active::after {
+            content: '✓';
+            position: absolute;
+            left: 1rem;
+            color: #667eea;
+        }
+
         /* Footer Enhancements */
         .site-footer {
             background: #1a1a1a !important;
@@ -249,6 +347,16 @@
             .navbar-social {
                 margin-top: 0.5rem;
             }
+
+            .language-switcher {
+                margin-top: 1rem;
+                margin-right: 0;
+            }
+
+            .language-btn {
+                width: 100%;
+                justify-content: center;
+            }
             
             .footer-content {
                 padding: 1rem 0;
@@ -332,10 +440,34 @@
                             </a>
                         </div>
                         
-                        <a href="{% url 'contact:service_request' %}" class="btn-rakaez-primary btn-sm ms-2">
-                            <i class="fas fa-hand-holding-heart me-1"></i>
-                            {% trans 'طلب خدمة' %}
-                        </a>
+                        <!-- Language Switcher -->
+                        <div class="language-switcher">
+                            {% get_current_language as LANGUAGE_CODE %}
+                            <button class="language-btn" onclick="toggleLanguageMenu(event)">
+                                <i class="fas fa-globe"></i>
+                                <span>
+                                    {% if LANGUAGE_CODE == 'ar' %}العربية
+                                    {% elif LANGUAGE_CODE == 'en' %}English
+                                    {% elif LANGUAGE_CODE == 'tr' %}Türkçe
+                                    {% else %}العربية{% endif %}
+                                </span>
+                                <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                            </button>
+                            <div class="language-dropdown" id="languageDropdown">
+                                <button class="language-option {% if LANGUAGE_CODE == 'ar' %}active{% endif %}" 
+                                        onclick="setLanguage('ar')">
+                                    العربية
+                                </button>
+                                <button class="language-option {% if LANGUAGE_CODE == 'en' %}active{% endif %}" 
+                                        onclick="setLanguage('en')">
+                                    English
+                                </button>
+                                <button class="language-option {% if LANGUAGE_CODE == 'tr' %}active{% endif %}" 
+                                        onclick="setLanguage('tr')">
+                                    Türkçe
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -417,28 +549,28 @@
             <div class="footer-bottom">
                 <div class="container">
                     <div class="row align-items-center">
-            <div class="col-md-6">
-                <p class="text-muted mb-0">
-                    © {% now "Y" %} {{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}. {% trans 'جميع الحقوق محفوظة.' %}
-                </p>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <div class="d-flex align-items-center justify-content-md-end flex-wrap">
-                    <a href="#" class="text-muted me-3">{% trans 'سياسة الخصوصية' %}</a>
-                    <a href="#" class="text-muted me-3">{% trans 'شروط الاستخدام' %}</a>
-                    
-                    <!-- شعار NoonSoft -->
-                    <div class="developer-credit">
-                        <span class="text-muted small">{% trans 'تم التطوير بواسطة' %}</span>
-                        <a href="" target="_blank" class="noonsoft-link ms-1" title="NoonSoft - تطوير المواقع والتطبيقات">
-                            <strong>NoonSoft</strong>
-                        </a>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-0">
+                                © {% now "Y" %} {{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}. {% trans 'جميع الحقوق محفوظة.' %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="d-flex align-items-center justify-content-md-end flex-wrap">
+                                <a href="#" class="text-muted me-3">{% trans 'سياسة الخصوصية' %}</a>
+                                <a href="#" class="text-muted me-3">{% trans 'شروط الاستخدام' %}</a>
+                                
+                                <!-- شعار NoonSoft -->
+                                <div class="developer-credit">
+                                    <span class="text-muted small">{% trans 'تم التطوير بواسطة' %}</span>
+                                    <a href="" target="_blank" class="noonsoft-link ms-1" title="NoonSoft - تطوير المواقع والتطبيقات">
+                                        <strong>NoonSoft</strong>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
         </footer>
     </div>
 
@@ -447,6 +579,54 @@
     
     <!-- Custom JavaScript -->
     <script>
+        // Language Switcher Functions
+        function toggleLanguageMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('languageDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('languageDropdown');
+            const languageBtn = document.querySelector('.language-btn');
+            
+            if (!dropdown.contains(event.target) && !languageBtn.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function setLanguage(lang) {
+            // Create and submit form for language change
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "set_language" %}';
+            
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = '{{ csrf_token }}';
+            form.appendChild(csrfToken);
+            
+            // Add language
+            const languageInput = document.createElement('input');
+            languageInput.type = 'hidden';
+            languageInput.name = 'language';
+            languageInput.value = lang;
+            form.appendChild(languageInput);
+            
+            // Add next URL
+            const nextInput = document.createElement('input');
+            nextInput.type = 'hidden';
+            nextInput.name = 'next';
+            nextInput.value = window.location.pathname;
+            form.appendChild(nextInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -473,7 +653,7 @@
             }
         });
 
-        // Scroll animations using the class from your CSS
+        // Scroll animations
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -494,11 +674,9 @@
             });
         });
 
-        // Footer visibility and interactions
+        // Footer adjustments
         document.addEventListener('DOMContentLoaded', function() {
-            // تأكد من أن الفوتر يظهر بشكل صحيح
             const footer = document.querySelector('.site-footer');
-            const pageWrapper = document.querySelector('.page-wrapper');
             
             function adjustFooter() {
                 const bodyHeight = document.body.scrollHeight;
@@ -509,62 +687,9 @@
                 }
             }
             
-            // تشغيل الدالة عند تحميل الصفحة وتغيير حجم النافذة
             adjustFooter();
             window.addEventListener('resize', adjustFooter);
-            
-            // إضافة تأثيرات تفاعلية للفوتر
-            const footerLinks = document.querySelectorAll('.footer-links a');
-            footerLinks.forEach(link => {
-                link.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateX(-5px)';
-                    this.style.color = 'var(--primary-blue)';
-                });
-                link.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateX(0)';
-                    this.style.color = '#adb5bd';
-                });
-            });
         });
-
-        // تحسين أداء الصور
-        document.addEventListener('DOMContentLoaded', function() {
-            const images = document.querySelectorAll('img');
-            images.forEach(img => {
-                img.addEventListener('load', function() {
-                    this.style.opacity = '1';
-                });
-                if (!img.complete) {
-                    img.style.opacity = '0';
-                    img.style.transition = 'opacity 0.3s ease';
-                }
-            });
-        });
-
-        // إضافة تأثير loading للأزرار
-        document.querySelectorAll('.btn, .btn-rakaez-primary, .btn-rakaez-outline').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (this.getAttribute('href') && this.getAttribute('href').startsWith('http')) {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<span class="rakaez-loader"></span> جاري التحميل...';
-                    
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                    }, 1000);
-                }
-            });
-        });
-
-        // تفعيل الرسوم المتحركة للعناصر المرئية
-        function initializeAnimations() {
-            const elements = document.querySelectorAll('.rakaez-card, .service-card-enhanced, .team-member-card, .news-card-enhanced, .stat-item-enhanced');
-            elements.forEach(el => {
-                el.classList.add('scroll-animate');
-            });
-        }
-
-        // تشغيل الرسوم المتحركة عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', initializeAnimations);
     </script>
 
     {% block extra_js %}{% endblock %}

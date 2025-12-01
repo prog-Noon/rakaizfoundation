@@ -1,9 +1,5 @@
-<!-- templates/dashboard/services.html-->
-
 {% extends 'dashboard/base.html' %}
 {% block title %}إدارة الخدمات{% endblock %}
-{% block page_title %}إدارة الخدمات{% endblock %}
-{% block page_description %}عرض وإدارة جميع الخدمات المتاحة{% endblock %}
 
 {% block content %}
 <!-- إحصائيات الخدمات -->
@@ -96,6 +92,7 @@
                         <th>الخدمة</th>
                         <th>الفئة</th>
                         <th>الحالة</th>
+                        <th>المشاهدات</th>
                         <th>تاريخ الإنشاء</th>
                         <th>الإجراءات</th>
                     </tr>
@@ -115,15 +112,24 @@
                                         </div>
                                     {% endif %}
                                     <div>
-                                        <h6 class="mb-0">{{ service.title_ar }}</h6>
-                                        <small class="text-muted">{{ service.description_ar|truncatechars:50 }}</small>
+                                        <h6 class="mb-0">
+                                            {{ service.title_ar }}
+                                            {% if service.is_featured %}
+                                                <span class="badge bg-warning ms-2">
+                                                    <i class="fas fa-star"></i> مميز
+                                                </span>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="text-muted">{{ service.description_ar|truncatechars:50|striptags }}</small>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-secondary">
-                                    {{ service.category|default:"عام" }}
-                                </span>
+                                {% if service.category %}
+                                    <span class="badge bg-secondary">{{ service.category.name_ar }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
                             </td>
                             <td>
                                 {% if service.is_active %}
@@ -137,6 +143,11 @@
                                         غير نشطة
                                     </span>
                                 {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold">{{ service.views }}</span>
+                                <br>
+                                <small class="text-muted">مشاهدة</small>
                             </td>
                             <td>
                                 <div>
@@ -179,7 +190,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="fas fa-inbox fa-4x mb-3 opacity-50"></i>
                                     <h5>لا توجد خدمات</h5>
@@ -273,10 +284,6 @@
                         <i class="fas fa-upload me-1"></i>
                         استيراد
                     </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="bulkActions()">
-                        <i class="fas fa-tasks me-1"></i>
-                        إجراءات متعددة
-                    </button>
                 </div>
             </div>
         </div>
@@ -286,14 +293,13 @@
 
 {% block extra_js %}
 <script>
-    // تغيير حالة الخدمة
+    // دالة تغيير حالة الخدمة
     function toggleServiceStatus(serviceId) {
         if(confirm('هل تريد تغيير حالة هذه الخدمة؟')) {
-            // AJAX call لتغيير الحالة
             fetch(`/dashboard/api/services/${serviceId}/toggle/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'X-CSRFToken': getCookie('csrftoken'),
                     'Content-Type': 'application/json',
                 },
             })
@@ -322,9 +328,7 @@
     
     // تصدير الخدمات
     function exportServices() {
-        const searchParams = new URLSearchParams(window.location.search);
-        const exportUrl = `/dashboard/api/services/export/?${searchParams.toString()}`;
-        window.open(exportUrl, '_blank');
+        alert('ميزة التصدير ستكون متاحة قريباً');
     }
     
     // استيراد خدمات
@@ -332,57 +336,43 @@
         alert('ميزة الاستيراد ستكون متاحة قريباً');
     }
     
-    // الإجراءات المتعددة
-    function bulkActions() {
-        alert('ميزة الإجراءات المتعددة ستكون متاحة قريباً');
+    // دالة الحصول على CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
     
-    // تحديث فوري للبحث (اختياري)
+    // تغيير فوري عند تغيير الحالة
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.querySelector('input[name="search"]');
         const statusSelect = document.querySelector('select[name="status"]');
-        
-        // إضافة تأخير للبحث التلقائي
-        let searchTimeout;
-        searchInput?.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (this.value.length >= 3 || this.value.length === 0) {
-                    // تشغيل البحث تلقائياً
-                    // this.closest('form').submit();
-                }
-            }, 500);
-        });
-        
-        // تغيير فوري عند تغيير الحالة
         statusSelect?.addEventListener('change', function() {
             this.closest('form').submit();
         });
     });
-    
-    // تحسين تجربة المستخدم
-    document.querySelectorAll('.btn-group .btn').forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.05)';
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
-    
-    // إضافة تأكيد لإجراءات حساسة
-    document.querySelectorAll('.btn-outline-danger').forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (!this.onclick && !confirm('هل أنت متأكد من هذا الإجراء؟')) {
-                e.preventDefault();
-            }
-        });
-    });
 </script>
 
-<!-- CSS إضافي -->
 <style>
+    .dashboard-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
     .table td {
         vertical-align: middle;
     }
@@ -391,8 +381,13 @@
         transition: all 0.2s ease;
     }
     
+    .btn-group .btn:hover {
+        transform: scale(1.1);
+    }
+    
     .badge {
         font-size: 0.75em;
+        padding: 0.35em 0.65em;
     }
     
     .pagination .page-link {
@@ -400,32 +395,12 @@
         margin: 0 2px;
     }
     
-    .pagination .page-item.active .page-link {
-        background: var(--primary-blue);
-        border-color: var(--primary-blue);
-    }
-    
     .table-hover tbody tr:hover {
         background-color: rgba(74, 144, 226, 0.05);
     }
     
-    .dashboard-card:hover {
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    
-    @media (max-width: 768px) {
-        .btn-group {
-            flex-direction: column;
-        }
-        
-        .btn-group .btn {
-            margin-bottom: 2px;
-            border-radius: 0.375rem !important;
-        }
-        
-        .table-responsive {
-            font-size: 0.9em;
-        }
+    .opacity-50 {
+        opacity: 0.5;
     }
 </style>
 {% endblock %}
