@@ -1,0 +1,56 @@
+# English translations for Rakayez Foundation
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+# Navigation
+msgid "الرئيسية"
+msgstr "Home"
+
+msgid "من نحن"
+msgstr "About Us"
+
+msgid "خدماتنا"
+msgstr "Our Services"
+
+msgid "الأخبار"
+msgstr "News"
+
+msgid "تواصل معنا"
+msgstr "Contact Us"
+
+msgid "جميع الخدمات"
+msgstr "All Services"
+
+msgid "جلسات دعم"
+msgstr "Support Sessions"
+
+msgid "ورش تدريبية"
+msgstr "Training Workshops"
+
+msgid "برامج تأهيل"
+msgstr "Rehabilitation Programs"
+
+msgid "أنشطة تفاعلية"
+msgstr "Interactive Activities"
+
+# Footer
+msgid "روابط سريعة"
+msgstr "Quick Links"
+
+msgid "معلومات إضافية"
+msgstr "Additional Information"
+
+msgid "جميع الحقوق محفوظة."
+msgstr "All rights reserved."
+
+msgid "سياسة الخصوصية"
+msgstr "Privacy Policy"
+
+msgid "شروط الاستخدام"
+msgstr "Terms of Use"
+
+msgid "تم التطوير بواسطة"
+msgstr "Developed by"

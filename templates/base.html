@@ -3,7 +3,8 @@
 {% load i18n %}
 
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +12,16 @@
     <meta name="keywords" content="مؤسسة ركائز، تمكين المرأة، سوريا، تنمية، توعية">
     <meta name="author" content="مؤسسة ركائز">
     
-    <title>{% block title %}{{ site_settings.site_name_ar }}{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.site_name }}{% endblock %}</title>
     
-    <!-- Bootstrap RTL -->
+    <!-- Bootstrap CSS - RTL/LTR Dynamic -->
+{% get_current_language as LANGUAGE_CODE %}
+{% if LANGUAGE_CODE == 'ar' %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
+{% else %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+{% endif %}
+<!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts Arabic -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -378,9 +384,9 @@
             <div class="container">
                 <a class="navbar-brand" href="{% url 'core:home' %}">
                     {% if site_settings.logo %}
-                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name_ar }}" class="rakaez-logo">
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" class="rakaez-logo">
                     {% else %}
-                        <img src="{% static 'images/logo.png' %}" alt="{{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}" class="rakaez-logo">
+                        <img src="{% static 'images/logo.png' %}" alt="{{ site_settings.site_name|default:'مؤسسة ركائز' }}" class="rakaez-logo">
                     {% endif %}
                 </a>
                 
@@ -485,10 +491,10 @@
                 <div class="footer-content">
                     <div class="row g-4">
                         <div class="col-lg-4 footer-section">
-                            <h5>{{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}</h5>
+                            <h5>{{ site_settings.site_name|default:'مؤسسة ركائز' }}</h5>
                             <p>
-                                {% if site_settings.about_ar %}
-                                    {{ site_settings.about_ar|truncatewords:20 }}
+                                {% if site_settings.about %}
+                                    {{ site_settings.about|truncatewords:20 }}
                                 {% else %}
                                     "لأن المرأة جوهر التغيير" - مؤسسة تنموية توعوية تُعنى بتفعيل دور المرأة السورية عبر برامج ومبادرات نوعية
                                 {% endif %}
@@ -551,7 +557,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <p class="text-muted mb-0">
-                                © {% now "Y" %} {{ site_settings.site_name_ar|default:'مؤسسة ركائز' }}. {% trans 'جميع الحقوق محفوظة.' %}
+                                © {% now "Y" %} {{ site_settings.site_name|default:'مؤسسة ركائز' }}. {% trans 'جميع الحقوق محفوظة.' %}
                             </p>
                         </div>
                         <div class="col-md-6 text-md-end">
@@ -597,35 +603,15 @@
         });
 
         function setLanguage(lang) {
-            // Create and submit form for language change
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{% url "set_language" %}';
-            
-            // Add CSRF token
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = 'csrfmiddlewaretoken';
-            csrfToken.value = '{{ csrf_token }}';
-            form.appendChild(csrfToken);
-            
-            // Add language
-            const languageInput = document.createElement('input');
-            languageInput.type = 'hidden';
-            languageInput.name = 'language';
-            languageInput.value = lang;
-            form.appendChild(languageInput);
-            
-            // Add next URL
-            const nextInput = document.createElement('input');
-            nextInput.type = 'hidden';
-            nextInput.name = 'next';
-            nextInput.value = window.location.pathname;
-            form.appendChild(nextInput);
-            
-            document.body.appendChild(form);
-            form.submit();
-        }
+    // الحصول على المسار الحالي
+    let currentPath = window.location.pathname;
+    
+    // إزالة بادئة اللغة القديمة
+    currentPath = currentPath.replace(/^\/(ar|en|tr)\//, '/');
+    
+    // إضافة بادئة اللغة الجديدة
+    window.location.href = `/${lang}${currentPath}`;
+}
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

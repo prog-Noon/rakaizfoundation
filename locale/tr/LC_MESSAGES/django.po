@@ -1,0 +1,56 @@
+# Turkish translations for Rakayez Foundation
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: tr\n"
+
+# Navigation
+msgid "الرئيسية"
+msgstr "Ana Sayfa"
+
+msgid "من نحن"
+msgstr "Hakkımızda"
+
+msgid "خدماتنا"
+msgstr "Hizmetlerimiz"
+
+msgid "الأخبار"
+msgstr "Haberler"
+
+msgid "تواصل معنا"
+msgstr "İletişim"
+
+msgid "جميع الخدمات"
+msgstr "Tüm Hizmetler"
+
+msgid "جلسات دعم"
+msgstr "Destek Oturumları"
+
+msgid "ورش تدريبية"
+msgstr "Eğitim Atölyeleri"
+
+msgid "برامج تأهيل"
+msgstr "Rehabilitasyon Programları"
+
+msgid "أنشطة تفاعلية"
+msgstr "İnteraktif Etkinlikler"
+
+# Footer
+msgid "روابط سريعة"
+msgstr "Hızlı Linkler"
+
+msgid "معلومات إضافية"
+msgstr "Ek Bilgiler"
+
+msgid "جميع الحقوق محفوظة."
+msgstr "Tüm hakları saklıdır."
+
+msgid "سياسة الخصوصية"
+msgstr "Gizlilik Politikası"
+
+msgid "شروط الاستخدام"
+msgstr "Kullanım Koşulları"
+
+msgid "تم التطوير بواسطة"
+msgstr "Geliştiren"

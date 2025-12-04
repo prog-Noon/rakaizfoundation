@@ -2,8 +2,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from core.models import BaseModel
+from core.mixins import MultilingualMixin
 
-class TeamMember(BaseModel):
+class TeamMember(MultilingualMixin, BaseModel):
     """نموذج أعضاء الفريق"""
     name_ar = models.CharField(max_length=100, verbose_name=_('الاسم - عربي'))
     name_en = models.CharField(max_length=100, verbose_name=_('الاسم - إنجليزي'))
@@ -34,4 +35,4 @@ class TeamMember(BaseModel):
         ordering = ['order', 'name_ar']
     
     def __str__(self):
-        return self.name_ar
+        return self.name

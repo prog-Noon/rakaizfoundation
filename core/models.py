@@ -2,6 +2,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
+from core.mixins import MultilingualMixin
 
 class BaseModel(models.Model):
     """نموذج أساسي لجميع النماذج الأخرى"""
@@ -11,7 +12,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-class SiteSettings(models.Model):
+class SiteSettings(MultilingualMixin, models.Model):
     """إعدادات الموقع العامة"""
     site_name_ar = models.CharField(max_length=100, default="مؤسسة ركائز", verbose_name=_('اسم الموقع - عربي'))
     site_name_en = models.CharField(max_length=100, default="Rakayez Foundation", verbose_name=_('اسم الموقع - إنجليزي'))

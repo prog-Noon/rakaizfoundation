@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from core.models import BaseModel
 from ckeditor_uploader.fields import RichTextUploadingField
+from core.mixins import MultilingualMixin
 
-class NewsCategory(BaseModel):
+class NewsCategory(MultilingualMixin, BaseModel):
     """تصنيفات الأخبار"""
     name_ar = models.CharField(max_length=100, verbose_name=_('الاسم - عربي'))
     name_en = models.CharField(max_length=100, verbose_name=_('الاسم - إنجليزي'))
@@ -18,9 +19,9 @@ class NewsCategory(BaseModel):
         verbose_name_plural = _('تصنيفات الأخبار')
     
     def __str__(self):
-        return self.name_ar
+        return self.name
 
-class News(BaseModel):
+class News(MultilingualMixin, BaseModel):
     """نموذج الأخبار والأنشطة"""
     title_ar = models.CharField(max_length=200, verbose_name=_('العنوان - عربي'))
     title_en = models.CharField(max_length=200, verbose_name=_('العنوان - إنجليزي'))
@@ -51,4 +52,4 @@ class News(BaseModel):
         ordering = ['-published_at']
     
     def __str__(self):
-        return self.title_ar
+        return self.title 

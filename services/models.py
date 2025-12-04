@@ -4,8 +4,9 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from core.models import BaseModel
 from ckeditor.fields import RichTextField
+from core.mixins import MultilingualMixin
 
-class ServiceCategory(BaseModel):
+class ServiceCategory(MultilingualMixin, BaseModel):
     """فئات الخدمات"""
     name_ar = models.CharField(max_length=100, verbose_name=_('الاسم - عربي'))
     name_en = models.CharField(max_length=100, verbose_name=_('الاسم - إنجليزي'))
@@ -27,10 +28,10 @@ class ServiceCategory(BaseModel):
         ordering = ['order', 'name_ar']
     
     def __str__(self):
-        return self.name_ar
+        return self.name
 
 
-class Service(BaseModel):
+class Service(MultilingualMixin, BaseModel):
     """نموذج الخدمات"""
     title_ar = models.CharField(max_length=200, verbose_name=_('العنوان - عربي'))
     title_en = models.CharField(max_length=200, verbose_name=_('العنوان - إنجليزي'))
@@ -79,7 +80,7 @@ class Service(BaseModel):
         ordering = ['order', 'title_ar']
     
     def __str__(self):
-        return self.title_ar
+        return self.title
     
     def get_absolute_url(self):
         return reverse('services:detail', kwargs={'pk': self.pk})

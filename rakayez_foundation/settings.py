@@ -19,11 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-CHANGE-THIS-IN-PRODUCTION-123456789')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
-
+DEBUG = True
 # المضيفون المسموح بهم
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'rakaizfoundation.org,www.rakaizfoundation.org').split(',')
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'rakaizfoundation.org', 'www.rakaizfoundation.org']
 # إعدادات الأمان للإنتاج
 if not DEBUG:
     SECURE_SSL_REDIRECT = True  # إعادة توجيه HTTP إلى HTTPS
